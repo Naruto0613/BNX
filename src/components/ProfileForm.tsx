@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { UserProfile } from "../types";
+import { CountryFlag } from "../utils/flags";
 import { Award, BookOpen, GraduationCap, Laptop, Sparkles, User, Briefcase } from "lucide-react";
 
 interface ProfileFormProps {
@@ -105,7 +106,10 @@ export default function ProfileForm({ profile, onSave, isLoading }: ProfileFormP
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1">Одоо байгаа улс</label>
+            <label className="block text-xs font-medium text-neutral-400 mb-1 flex items-center gap-1.5">
+              <span>Одоо байгаа улс</span>
+              {formData.country && <CountryFlag countryNameOrCode={formData.country} className="w-4 h-3 rounded-sm object-cover shadow-sm" />}
+            </label>
             <input
               id="profile-country"
               type="text"

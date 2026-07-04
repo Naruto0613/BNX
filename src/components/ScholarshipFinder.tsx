@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Scholarship, UserProfile, AIScholarshipMatch } from "../types";
+import { CountryFlag } from "../utils/flags";
 import { Award, Compass, Search, Calendar, DollarSign, Sparkles, Filter, HelpCircle, AlertCircle } from "lucide-react";
 
 interface ScholarshipFinderProps {
@@ -110,8 +111,9 @@ export default function ScholarshipFinder({ scholarships, profile }: Scholarship
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] bg-neutral-900 border border-neutral-800 text-neutral-400 px-2 py-0.5 rounded font-mono uppercase">
-                      {s.country}
+                    <span className="text-[10px] bg-neutral-900 border border-neutral-800 text-neutral-400 px-2 py-0.5 rounded font-mono uppercase flex items-center gap-1.5">
+                      <CountryFlag countryNameOrCode={s.country} className="w-4 h-3 rounded-sm object-cover shadow-sm" />
+                      <span>{s.country}</span>
                     </span>
                     <span className="text-[10px] text-neutral-500 font-mono">Deadline: {s.deadline}</span>
                   </div>
@@ -167,13 +169,18 @@ export default function ScholarshipFinder({ scholarships, profile }: Scholarship
                 key={c}
                 id={`btn-schol-country-${c}`}
                 onClick={() => setSelectedCountry(c)}
-                className={`text-xs px-3.5 py-2 rounded-xl border shrink-0 transition-all ${
+                className={`text-xs px-3.5 py-2 rounded-xl border shrink-0 transition-all flex items-center gap-1.5 ${
                   selectedCountry === c
                     ? 'bg-white text-black border-white font-semibold'
                     : 'bg-neutral-900/30 border-neutral-800 text-neutral-400 hover:text-white'
                 }`}
               >
-                {c === 'All' ? 'Бүх Улс' : c}
+                {c === 'All' ? (
+                  <span>🌐</span>
+                ) : (
+                  <CountryFlag countryNameOrCode={c} className="w-4 h-3 rounded-sm object-cover shadow-sm" />
+                )}
+                <span>{c === 'All' ? 'Бүх Улс' : c}</span>
               </button>
             ))}
           </div>
@@ -191,8 +198,9 @@ export default function ScholarshipFinder({ scholarships, profile }: Scholarship
             <div>
               <div className="flex items-center justify-between mb-3 text-[10px]">
                 {s.country && (
-                  <span className="bg-neutral-950 border border-neutral-850 px-2.5 py-0.5 rounded font-mono uppercase text-neutral-400">
-                    {s.country}
+                  <span className="bg-neutral-950 border border-neutral-850 px-2.5 py-0.5 rounded font-mono uppercase text-neutral-400 flex items-center gap-1.5">
+                    <CountryFlag countryNameOrCode={s.country} className="w-4 h-3 rounded-sm object-cover shadow-sm" />
+                    <span>{s.country}</span>
                   </span>
                 )}
                 <span className="text-neutral-500 font-mono">Эцсийн хугацаа: {s.deadline}</span>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { countriesData } from "../data/countries";
+import { CountryFlag } from "../utils/flags";
 import { Search, Compass, DollarSign, BookOpen, ShieldCheck, HelpCircle, Landmark } from "lucide-react";
 
 export default function CountryExplorer() {
@@ -39,7 +40,7 @@ export default function CountryExplorer() {
                   : 'bg-neutral-900/30 border-neutral-800 hover:bg-neutral-900/60 text-neutral-300'
               }`}
             >
-              <span className="text-2xl select-none">{c.flag}</span>
+              <CountryFlag countryNameOrCode={c.code} className="w-8 h-5.5 rounded-sm object-cover shadow-sm border border-neutral-800/20 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm truncate">{c.name}</p>
                 <p className={`text-xs truncate ${selectedCountry.code === c.code ? 'text-neutral-700' : 'text-neutral-500'}`}>
@@ -57,14 +58,14 @@ export default function CountryExplorer() {
       {/* Main Details Panel */}
       <div id="country-details-panel" className="lg:col-span-8 bg-neutral-900/30 border border-neutral-800 rounded-3xl p-6 md:p-8 backdrop-blur-md relative overflow-hidden">
         {/* Flag badge overlay background */}
-        <div className="absolute top-4 right-4 opacity-[0.06] text-[150px] select-none pointer-events-none">
-          {selectedCountry.flag}
+        <div className="absolute top-4 right-4 opacity-[0.04] w-64 h-44 select-none pointer-events-none overflow-hidden rounded-2xl">
+          <CountryFlag countryNameOrCode={selectedCountry.code} className="w-full h-full object-cover" />
         </div>
 
         <div className="flex items-center gap-4 mb-6">
-          <span className="text-4xl p-2 bg-neutral-900/80 rounded-2xl border border-neutral-800 shadow-md">
-            {selectedCountry.flag}
-          </span>
+          <div className="p-1.5 bg-neutral-900 border border-neutral-850 rounded-2xl shadow-md shrink-0 flex items-center justify-center">
+            <CountryFlag countryNameOrCode={selectedCountry.code} className="w-14 h-9.5 rounded-xl object-cover" />
+          </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs bg-neutral-800 text-neutral-300 px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider">{selectedCountry.code}</span>

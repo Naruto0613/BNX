@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { University, UserProfile, AIRecommendationMatch } from "../types";
+import { CountryFlag } from "../utils/flags";
 import { Search, MapPin, Award, Book, DollarSign, Calendar, Sparkles, ExternalLink, ShieldCheck, ListFilter, AlertCircle, Eye } from "lucide-react";
 
 interface UniversityFinderProps {
@@ -173,8 +174,9 @@ export default function UniversityFinder({
                 className="bg-neutral-950/60 border border-neutral-850 rounded-2xl p-5 hover:border-neutral-700 transition"
               >
                 <div className="flex items-center justify-between gap-1 mb-3">
-                  <span className="text-[10px] font-mono uppercase bg-neutral-900 border border-neutral-800 text-neutral-400 px-2 py-0.5 rounded-md">
-                    {m.country}
+                  <span className="text-[10px] font-mono uppercase bg-neutral-900 border border-neutral-800 text-neutral-400 px-2 py-0.5 rounded-md flex items-center gap-1.5">
+                    <CountryFlag countryNameOrCode={m.country} className="w-4.5 h-3 rounded-sm object-cover shadow-sm" />
+                    <span>{m.country}</span>
                   </span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                     m.difficulty === 'Safety' 
@@ -243,13 +245,18 @@ export default function UniversityFinder({
                 key={country}
                 id={`btn-filter-country-${country}`}
                 onClick={() => setSelectedCountry(country)}
-                className={`text-xs px-3.5 py-2.5 rounded-xl border shrink-0 transition-colors ${
+                className={`text-xs px-3.5 py-2.5 rounded-xl border shrink-0 transition-colors flex items-center gap-1.5 ${
                   selectedCountry === country
                     ? 'bg-white text-black border-white font-semibold'
                     : 'bg-neutral-900/30 border-neutral-800 text-neutral-400 hover:text-white'
                 }`}
               >
-                {country === 'All' ? 'Бүх Улс' : country}
+                {country === 'All' ? (
+                  <span>🌐</span>
+                ) : (
+                  <CountryFlag countryNameOrCode={country} className="w-4 h-3 rounded-sm object-cover shadow-sm" />
+                )}
+                <span>{country === 'All' ? 'Бүх Улс' : country}</span>
               </button>
             ))}
           </div>
@@ -276,10 +283,11 @@ export default function UniversityFinder({
               >
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full uppercase leading-none font-bold ${
+                    <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full uppercase leading-none font-bold flex items-center gap-1.5 ${
                       selectedUni?.id === u.id ? 'bg-neutral-200 text-black' : 'bg-neutral-950 text-neutral-400'
                     }`}>
-                      {u.country}
+                      <CountryFlag countryNameOrCode={u.country} className="w-3.5 h-2.5 rounded-sm object-cover shadow-sm" />
+                      <span>{u.country}</span>
                     </span>
                     <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
                       difficulty === 'Safety'
@@ -321,7 +329,10 @@ export default function UniversityFinder({
               {/* Header and website */}
               <div className="flex flex-col sm:flex-row items-start justify-between gap-4 border-b border-neutral-800 pb-5">
                 <div>
-                  <span className="text-[10px] bg-neutral-800 text-neutral-300 px-2.5 py-0.5 rounded-md font-mono uppercase font-semibold">{selectedUni.country}</span>
+                  <span className="text-[10px] bg-neutral-800 text-neutral-300 px-2.5 py-0.5 rounded-md font-mono uppercase font-semibold flex items-center gap-1.5 w-fit">
+                    <CountryFlag countryNameOrCode={selectedUni.country} className="w-4 h-3 rounded-sm object-cover shadow-sm" />
+                    <span>{selectedUni.country}</span>
+                  </span>
                   <h3 className="text-xl font-bold text-white tracking-tight mt-1 leading-snug">{selectedUni.name}</h3>
                   <div className="flex items-center gap-4 mt-2 text-xs text-neutral-400 font-mono">
                     <span>QS Rank: #{selectedUni.ranking || "N/A"}</span>

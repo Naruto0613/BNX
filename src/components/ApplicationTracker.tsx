@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ApplicationTrack, University } from "../types";
+import { CountryFlag } from "../utils/flags";
 import { CheckSquare, Square, Calendar, Plus, Trash2, Edit3, Bookmark, AlertCircle, RefreshCw } from "lucide-react";
 
 interface ApplicationTrackerProps {
@@ -311,94 +312,102 @@ export default function ApplicationTracker({
 
       {/* TRACKS LIST */}
       <div id="tracks-cards-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tracks.map(t => (
-          <div
-            key={t.id}
-            id={`track-card-${t.id}`}
-            className="bg-neutral-900/30 border border-neutral-800 rounded-2xl p-5 hover:border-neutral-700 transition-all flex flex-col justify-between group relative overflow-hidden"
-          >
-            {/* Top row */}
-            <div>
-              <div className="flex items-center justify-between gap-1 mb-2.5">
-                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                  t.status === 'Admission Offered' || t.status === 'Scholarship Awarded'
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                    : t.status === 'Rejected'
-                    ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                    : 'bg-neutral-800 text-neutral-300'
-                }`}>
-                  {STATUS_LABELS[t.status] || t.status}
-                </span>
-                
-                {/* Actions */}
-                <div className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
-                  <button
-                    id={`btn-edit-track-${t.id}`}
-                    onClick={() => handleOpenEdit(t)}
-                    className="text-neutral-400 hover:text-white p-1 rounded hover:bg-neutral-950"
-                    title="Засах"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    id={`btn-delete-track-${t.id}`}
-                    onClick={() => handleDelete(t.id)}
-                    className="text-neutral-500 hover:text-rose-400 p-1 rounded hover:bg-neutral-950"
-                    title="Устгах"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              <h4 className="font-bold text-white text-sm line-clamp-2 leading-snug">{t.universityName}</h4>
-              
-              {/* Deadline */}
-              {t.deadline && (
-                <div className="flex items-center gap-1.5 mt-2 text-neutral-500 text-xs">
-                  <Calendar className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
-                  <span>Хугацаа: {t.deadline}</span>
-                </div>
-              )}
-
-              {/* Progress checklist summary */}
-              <div className="mt-4 pt-3.5 border-t border-neutral-850 space-y-1.5">
-                <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">Материал бэлтгэл</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-neutral-950 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-neutral-400 h-full transition-all duration-300"
-                      style={{ width: `${(t.submittedDocuments?.length || 0) / GENERAL_DOCS.length * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-neutral-400 font-mono">
-                    {t.submittedDocuments?.length || 0}/{GENERAL_DOCS.length}
+        {tracks.map(t => {
+          const uniMatch = universities.find(u => u.id === t.universityId);
+          const countryName = uniMatch ? uniMatch.country : "";
+          return (
+            <div
+              key={t.id}
+              id={`track-card-${t.id}`}
+              className="bg-neutral-900/30 border border-neutral-800 rounded-2xl p-5 hover:border-neutral-700 transition-all flex flex-col justify-between group relative overflow-hidden"
+            >
+              {/* Top row */}
+              <div>
+                <div className="flex items-center justify-between gap-1 mb-2.5">
+                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                    t.status === 'Admission Offered' || t.status === 'Scholarship Awarded'
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                      : t.status === 'Rejected'
+                      ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                      : 'bg-neutral-800 text-neutral-300'
+                  }`}>
+                    {STATUS_LABELS[t.status] || t.status}
                   </span>
+                  
+                  {/* Actions */}
+                  <div className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
+                    <button
+                      id={`btn-edit-track-${t.id}`}
+                      onClick={() => handleOpenEdit(t)}
+                      className="text-neutral-400 hover:text-white p-1 rounded hover:bg-neutral-950"
+                      title="Засах"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      id={`btn-delete-track-${t.id}`}
+                      onClick={() => handleDelete(t.id)}
+                      className="text-neutral-500 hover:text-rose-400 p-1 rounded hover:bg-neutral-950"
+                      title="Устгах"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
+
+                <h4 className="font-bold text-white text-sm line-clamp-2 leading-snug flex items-center gap-1.5">
+                  {countryName && <CountryFlag countryNameOrCode={countryName} className="w-4 h-3 rounded-sm object-cover shadow-sm shrink-0" />}
+                  <span>{t.universityName}</span>
+                </h4>
+                
+                {/* Deadline */}
+                {t.deadline && (
+                  <div className="flex items-center gap-1.5 mt-2 text-neutral-500 text-xs">
+                    <Calendar className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                    <span>Хугацаа: {t.deadline}</span>
+                  </div>
+                )}
+  
+                {/* Progress checklist summary */}
+                <div className="mt-4 pt-3.5 border-t border-neutral-850 space-y-1.5">
+                  <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">Материал бэлтгэл</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-neutral-950 h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-neutral-400 h-full transition-all duration-300"
+                        style={{ width: `${(t.submittedDocuments?.length || 0) / GENERAL_DOCS.length * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-neutral-400 font-mono">
+                      {t.submittedDocuments?.length || 0}/{GENERAL_DOCS.length}
+                    </span>
+                  </div>
+                </div>
+  
+                {/* Scholarships */}
+                {t.appliedScholarships && (
+                  <div className="mt-3.5 bg-neutral-950/40 p-2.5 rounded-xl border border-neutral-850 grid grid-cols-1 gap-0.5">
+                    <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">Хүссэн тэтгэлэг:</span>
+                    <span className="text-[11px] text-neutral-300 font-medium truncate">{t.appliedScholarships}</span>
+                  </div>
+                )}
+  
+                {/* Personal Notes */}
+                {t.notes && (
+                  <p className="text-neutral-400 text-xs mt-3 bg-neutral-950/20 p-2.5 rounded-xl border border-neutral-850/60 line-clamp-3 italic">
+                    &ldquo;{t.notes}&rdquo;
+                  </p>
+                )}
               </div>
-
-              {/* Scholarships */}
-              {t.appliedScholarships && (
-                <div className="mt-3.5 bg-neutral-950/40 p-2.5 rounded-xl border border-neutral-850 grid grid-cols-1 gap-0.5">
-                  <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">Хүссэн тэтгэлэг:</span>
-                  <span className="text-[11px] text-neutral-300 font-medium truncate">{t.appliedScholarships}</span>
-                </div>
-              )}
-
-              {/* Personal Notes */}
-              {t.notes && (
-                <p className="text-neutral-400 text-xs mt-3 bg-neutral-950/20 p-2.5 rounded-xl border border-neutral-850/60 line-clamp-3 italic">
-                  &ldquo;{t.notes}&rdquo;
-                </p>
-              )}
+  
+              {/* Last updated timestamp */}
+              <div className="mt-4 pt-2.5 border-t border-neutral-850/40 text-[9px] text-neutral-600 font-mono text-right">
+                Шинэчлэв: {t.updatedAt ? new Date(t.updatedAt).toLocaleDateString() : 'N/A'}
+              </div>
             </div>
+          );
+        })}
 
-            {/* Last updated timestamp */}
-            <div className="mt-4 pt-2.5 border-t border-neutral-850/40 text-[9px] text-neutral-600 font-mono text-right">
-              Шинэчлэв: {t.updatedAt ? new Date(t.updatedAt).toLocaleDateString() : 'N/A'}
-            </div>
-          </div>
-        ))}
 
         {tracks.length === 0 && (
           <div className="col-span-full py-16 bg-neutral-900/10 border border-dashed border-neutral-850 rounded-2xl flex flex-col items-center justify-center text-center p-6">
