@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  background-color: #050507;
+  color: #eeeef2;
+  font-family: var(--font-sans);
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(251, 191, 36, 0.02) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Elegant scrollbar modifications for dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #050507;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.2s ease-in-out;
+}
+
+/* Custom Bento Box helpers adapted to beautiful dark high-contrast layout */
+.bento-box {
+  background-color: #0c0c0e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1.5rem; /* rounded-3xl */
+  padding: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #eeeef2;
+}
+
+.bento-box:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background-color: #111115;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.bento-btn-primary {
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 1.5px solid #ffffff;
+}
+
+.bento-btn-primary:hover {
+  background-color: #e4e4e7;
+  border-color: #e4e4e7;
+  transform: translateY(-1px);
+}
+
+.bento-btn-primary:active {
+  transform: translateY(0);
+}
+
+/* CORE PREMIUM OVERRIDES FOR DARK WORKSPACE */
+.min-h-screen, .bg-white, .bg-neutral-50 {
+  background-color: #050507 !important;
+  color: #eeeef2 !important;
+}
+
+/* Nav Bar */
+nav.hidden.md\:flex, nav {
+  background-color: #09090b !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Overriding cards, lists and general container styles from components */
+.bg-neutral-900\/40, .bg-neutral-900\/50, .bg-neutral-950\/20, 
+.bg-neutral-950\/40, .bg-neutral-900\/30, .bg-neutral-950\/60,
+.bg-neutral-900\/60, .bg-white\/5, .bg-neutral-950\/30, .bg-neutral-950, 
+.bg-zinc-900, .bg-neutral-900, .bg-zinc-900\/40, .bg-zinc-950\/40,
+div[id="essay-info-card"], div[id="client-gpa-checker-summary"], .bg-neutral-950\/20 {
+  background-color: #0d0d11 !important;
+  color: #eeeef2 !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Force text inputs to have gorgeous futuristic dark inputs with white text */
+input, select, textarea {
+  background-color: #09090b !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 0.75rem !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #eeeef8 !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.05) !important;
+  outline: none !important;
+}
+
+/* High contrast typography adjustments */
+.text-black, .text-zinc-900, .text-neutral-900 {
+  color: #ffffff !important;
+}
+
+h1, h2, h3, h4, th {
+  color: #ffffff !important;
+}
+
+.text-neutral-500, .text-neutral-450, .text-zinc-500 {
+  color: #a1a1aa !important;
+}
+
+.text-neutral-400, .text-zinc-400 {
+  color: #cacace !important;
+}
+
+/* Grid border elements */
+.border, .border-neutral-100, .border-neutral-200, .border-zinc-200, .border-neutral-800, .border-neutral-850, .border-white\/10 {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Align fast demo triggers and premium solid buttons */
+[id="btn-fast-log-student"], [id="btn-fast-log-admin"], [id="btn-auth-submit"], [id="btn-submit-track"], [id="btn-new-essay"], button.bg-black {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1.5px solid #ffffff !important;
+  font-weight: 600 !important;
+}
+
+[id="btn-fast-log-student"]:hover, [id="btn-fast-log-admin"]:hover, [id="btn-auth-submit"]:hover, button.bg-black:hover {
+  background-color: #e4e4e7 !important;
+  border-color: #e4e4e7 !important;
+}
+
+/* Fix active and inactive tab contrast on Navigations */
+nav button {
+  color: #a1a1aa !important;
+}
+
+nav button:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: #ffffff !important;
+}
+
+/* When a tab button is chosen (has white or custom background class) make background white and text solid black */
+nav button[class*="bg-black"],
+nav button[class*="bg-black"] *,
+nav button[class*="bg-black"] svg,
+.md\:hidden button[class*="bg-black"],
+.md\:hidden button[class*="bg-black"] * {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+/* Alert styling improvements */
+.bg-rose-500\/10 {
+  background-color: rgba(244, 63, 94, 0.06) !important;
+  border-color: rgba(244, 63, 94, 0.2) !important;
+  color: #fda4af !important;
+}
+
+.bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.06) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+  color: #6ee7b7 !important;
+}
+
+/* Ensure surlagiin tuuh and academic markers look clear: dark grey background with pure bright white text */
+.bg-neutral-800 {
+  background-color: #1f1f23 !important;
+}
+.bg-neutral-800, .bg-neutral-800 * {
+  color: #ffffff !important;
+}

@@ -1,0 +1,141 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Student profile containing personal, academic, and career interest data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "age": { "type": "number" },
+        "country": { "type": "string" },
+        "school": { "type": "string" },
+        "gpa": { "type": "number" },
+        "classRank": { "type": "string" },
+        "ieltsScore": { "type": "number" },
+        "toeflScore": { "type": "number" },
+        "satScore": { "type": "number" },
+        "actScore": { "type": "number" },
+        "apCourses": { "type": "string" },
+        "ibCourses": { "type": "string" },
+        "awards": { "type": "string" },
+        "olympiads": { "type": "string" },
+        "competitions": { "type": "string" },
+        "volunteerActivities": { "type": "string" },
+        "leadershipExperience": { "type": "string" },
+        "extracurricularActivities": { "type": "string" },
+        "programmingSkills": { "type": "string" },
+        "languageSkills": { "type": "string" },
+        "careerInterests": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name"]
+    },
+    "University": {
+      "title": "University",
+      "description": "Details of universities worldwide",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "country": { "type": "string" },
+        "ranking": { "type": "number" },
+        "acceptanceRate": { "type": "string" },
+        "website": { "type": "string" },
+        "tuitionFee": { "type": "number" },
+        "dormitoryFee": { "type": "number" },
+        "livingCost": { "type": "number" },
+        "healthInsurance": { "type": "number" },
+        "applicationFee": { "type": "number" },
+        "estimatedAnnualCost": { "type": "number" },
+        "minGpa": { "type": "number" },
+        "ieltsMin": { "type": "number" },
+        "toeflMin": { "type": "number" },
+        "satMin": { "type": "number" },
+        "requiredSubjects": { "type": "string" },
+        "requiredDocuments": { "type": "string" },
+        "openingDate": { "type": "string" },
+        "deadline": { "type": "string" },
+        "resultDate": { "type": "string" },
+        "scholarships": { "type": "string" }
+      },
+      "required": ["name", "country"]
+    },
+    "Scholarship": {
+      "title": "Scholarship",
+      "description": "Scholarships details for students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "universityId": { "type": "string" },
+        "universityName": { "type": "string" },
+        "amount": { "type": "string" },
+        "eligibility": { "type": "string" },
+        "deadline": { "type": "string" },
+        "major": { "type": "string" }
+      },
+      "required": ["name", "amount"]
+    },
+    "Application": {
+      "title": "Application Track",
+      "description": "Tracking user university applications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "universityId": { "type": "string" },
+        "universityName": { "type": "string" },
+        "status": { "type": "string" },
+        "submittedDocuments": { "type": "string" },
+        "appliedScholarships": { "type": "string" },
+        "notes": { "type": "string" },
+        "deadline": { "type": "string" },
+        "result": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "universityId", "universityName"]
+    },
+    "Essay": {
+      "title": "Essay Draft",
+      "description": "User essay draft with AI analysis",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "grammarCorrections": { "type": "string" },
+        "ieltsFeedback": { "type": "string" },
+        "structureAnalysis": { "type": "string" },
+        "scoreEstimate": { "type": "string" },
+        "suggestions": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "content"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "A single user profile record"
+    },
+    "/universities/{universityId}": {
+      "schema": "University",
+      "description": "A university details record"
+    },
+    "/scholarships/{scholarshipId}": {
+      "schema": "Scholarship",
+      "description": "A scholarship details record"
+    },
+    "/applications/{applicationId}": {
+      "schema": "Application",
+      "description": "An application tracker record"
+    },
+    "/essays/{essayId}": {
+      "schema": "Essay",
+      "description": "An essay feedback record"
+    }
+  }
+}

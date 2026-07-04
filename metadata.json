@@ -1,0 +1,6 @@
+{
+  "name": "BNX",
+  "description": "Монгол оюутнуудад зориулсан дэлхийн сургууль, тэтгэлэг олох, эссэ бичихэд туслах хиймэл оюуны зөвлөх систем.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
