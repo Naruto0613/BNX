@@ -160,7 +160,6 @@ export default function EssayHelper({
         </div>
       </div>
 
-      {/* Main panel: Text editor & analysis result */}
       <div id="essay-editor-wrapper" className="lg:col-span-8 space-y-6">
         <div className="bg-neutral-900/30 border border-neutral-800 rounded-3xl p-6 md:p-8 backdrop-blur-md">
           <div className="space-y-4">
