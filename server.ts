@@ -11,22 +11,29 @@ const app = express();
 const PORT = 3000;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
 
 let aiClient: GoogleGenAI | null = null;
+function getGeminiApiKey(): string {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "GEMINI_API_KEY is not configured. Add it to your local .env file or your Vercel project environment variables.",
+    );
+  }
+  return apiKey;
+}
+
 function getGenAI(): GoogleGenAI {
   if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY environment variable is required to run AI features. Please add it in the Secrets panel.");
-    }
+    const apiKey = getGeminiApiKey();
     aiClient = new GoogleGenAI({
       apiKey,
       httpOptions: {
         headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
+          "User-Agent": "aistudio-build",
+        },
+      },
     });
   }
   return aiClient;
@@ -44,7 +51,7 @@ async function generateAIContentWithFallback(params: {
     "gemini-3.1-flash-lite",
     "gemini-3.5-flash",
     "gemini-2.5-flash",
-    "gemini-2.0-flash"
+    "gemini-2.0-flash",
   ];
   let lastError: any = null;
 
@@ -54,29 +61,41 @@ async function generateAIContentWithFallback(params: {
 
     while (attempt < maxAttempts) {
       try {
-        console.log(`[AI] Attempting AI generation using model: ${model} (Attempt ${attempt + 1}/${maxAttempts})`);
+        console.log(
+          `[AI] Attempting AI generation using model: ${model} (Attempt ${attempt + 1}/${maxAttempts})`,
+        );
         const ai = getGenAI();
         const response = await ai.models.generateContent({
           model,
           contents: params.contents,
-          config: params.config
+          config: params.config,
         });
         return response;
       } catch (error: any) {
         lastError = error;
         attempt++;
-        
+
         const errorMessage = error?.message || "";
         const errorCode = error?.status || error?.code || 0;
-        
+
         // If we get a 503 (Unavailable) or 429 (Rate Limit), wait and retry.
-        if (attempt < maxAttempts && (errorCode === 503 || errorCode === 429 || errorMessage.includes("503") || errorMessage.includes("429"))) {
+        if (
+          attempt < maxAttempts &&
+          (errorCode === 503 ||
+            errorCode === 429 ||
+            errorMessage.includes("503") ||
+            errorMessage.includes("429"))
+        ) {
           const waitTime = Math.pow(2, attempt) * 500;
-          console.warn(`[AI] Temporary error (${errorCode}) on ${model}. Retrying in ${waitTime}ms...`);
+          console.warn(
+            `[AI] Temporary error (${errorCode}) on ${model}. Retrying in ${waitTime}ms...`,
+          );
           await delay(waitTime);
         } else {
           // Break out of retry loop for this model and try the next fallback model
-          console.warn(`[AI] Error on ${model}: ${errorMessage}. Moving to fallback if available.`);
+          console.warn(
+            `[AI] Error on ${model}: ${errorMessage}. Moving to fallback if available.`,
+          );
           break;
         }
       }
@@ -142,19 +161,23 @@ Do not write any markdown wrappers (and no \`\`\`json) outside the pure JSON pay
     const response = await generateAIContentWithFallback({
       contents: prompt,
       config: {
-        responseMimeType: "application/json"
-      }
+        responseMimeType: "application/json",
+      },
     });
 
     const text = response.text || "{}";
     res.json(JSON.parse(text));
   } catch (error: any) {
     console.error("AI Recommendation Error:", error);
-    res.status(500).json({ error: error.message || "Failed to make AI university recommendations" });
+    res
+      .status(500)
+      .json({
+        error: error.message || "Failed to make AI university recommendations",
+      });
   }
 });
 
-// 2. AI Essay Assistant Endpoint 
+// 2. AI Essay Assistant Endpoint
 app.post("/api/essay-analyze", async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -190,15 +213,17 @@ Do not write any markdown wrappers or comments outside the pure JSON payload.
     const response = await generateAIContentWithFallback({
       contents: prompt,
       config: {
-        responseMimeType: "application/json"
-      }
+        responseMimeType: "application/json",
+      },
     });
 
     const text = response.text || "{}";
     res.json(JSON.parse(text));
   } catch (error: any) {
     console.error("AI Essay Analysis Error:", error);
-    res.status(500).json({ error: error.message || "Failed to perform essay analysis." });
+    res
+      .status(500)
+      .json({ error: error.message || "Failed to perform essay analysis." });
   }
 });
 
@@ -250,20 +275,27 @@ Do not write any markdown wrappers outside the pure JSON payload.
     const response = await generateAIContentWithFallback({
       contents: prompt,
       config: {
-        responseMimeType: "application/json"
-      }
+        responseMimeType: "application/json",
+      },
     });
 
     const text = response.text || "{}";
     res.json(JSON.parse(text));
   } catch (error: any) {
     console.error("AI Scholarship Finder Error:", error);
-    res.status(500).json({ error: error.message || "Failed to locate scholarships." });
+    res
+      .status(500)
+      .json({ error: error.message || "Failed to locate scholarships." });
   }
 });
 
 app.get("/api/health", (req, res) => {
-  res.json({ status: "healthy" });
+  res.json({
+    status: "healthy",
+    aiConfigured: Boolean(
+      process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY,
+    ),
+  });
 });
 
 // Serve frontend assets and boot listener
@@ -275,15 +307,17 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
     });
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`BNX Full-stack local server running on http://localhost:${PORT}`);
+    console.log(
+      `BNX Full-stack local server running on http://localhost:${PORT}`,
+    );
   });
 }
 
