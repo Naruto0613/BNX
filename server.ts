@@ -13,20 +13,16 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
+// Lazy initializer for Google GenAI Client
 let aiClient: GoogleGenAI | null = null;
-function getGeminiApiKey(): string {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "GEMINI_API_KEY is not configured. Add it to your local .env file or your Vercel project environment variables.",
-    );
-  }
-  return apiKey;
-}
-
 function getGenAI(): GoogleGenAI {
   if (!aiClient) {
-    const apiKey = getGeminiApiKey();
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error(
+        "GEMINI_API_KEY environment variable is missing. Please make sure your Gemini API key is configured in the Settings/Secrets panel.",
+      );
+    }
     aiClient = new GoogleGenAI({
       apiKey,
       httpOptions: {
@@ -42,22 +38,34 @@ function getGenAI(): GoogleGenAI {
 // Helper to pause execution
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Robust wrapper with automatic retry and model fallback for high demand/503/429 scenarios
+// Helper to safely strip markdown code blocks before parsing JSON
+function cleanAndParseJSON(rawText: string) {
+  if (!rawText) return {};
+  let cleaned = rawText.trim();
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
+  }
+  return JSON.parse(cleaned);
+}
+
+// Robust wrapper with automatic retry and valid Gemini models
 async function generateAIContentWithFallback(params: {
   contents: string;
   config?: any;
 }): Promise<any> {
   const modelsToTry = [
-    "gemini-3.1-flash-lite",
-    "gemini-3.5-flash",
     "gemini-2.5-flash",
     "gemini-2.0-flash",
+    "gemini-1.5-flash",
   ];
   let lastError: any = null;
 
   for (const model of modelsToTry) {
     let attempt = 0;
-    const maxAttempts = 3;
+    const maxAttempts = 2;
 
     while (attempt < maxAttempts) {
       try {
@@ -78,7 +86,14 @@ async function generateAIContentWithFallback(params: {
         const errorMessage = error?.message || "";
         const errorCode = error?.status || error?.code || 0;
 
-        // If we get a 503 (Unavailable) or 429 (Rate Limit), wait and retry.
+        console.warn(
+          `[AI] Error on ${model} (Attempt ${attempt}): ${errorMessage}`,
+        );
+
+        if (errorMessage.includes("GEMINI_API_KEY")) {
+          throw error;
+        }
+
         if (
           attempt < maxAttempts &&
           (errorCode === 503 ||
@@ -87,15 +102,8 @@ async function generateAIContentWithFallback(params: {
             errorMessage.includes("429"))
         ) {
           const waitTime = Math.pow(2, attempt) * 500;
-          console.warn(
-            `[AI] Temporary error (${errorCode}) on ${model}. Retrying in ${waitTime}ms...`,
-          );
           await delay(waitTime);
         } else {
-          // Break out of retry loop for this model and try the next fallback model
-          console.warn(
-            `[AI] Error on ${model}: ${errorMessage}. Moving to fallback if available.`,
-          );
           break;
         }
       }
@@ -166,7 +174,7 @@ Do not write any markdown wrappers (and no \`\`\`json) outside the pure JSON pay
     });
 
     const text = response.text || "{}";
-    res.json(JSON.parse(text));
+    res.json(cleanAndParseJSON(text));
   } catch (error: any) {
     console.error("AI Recommendation Error:", error);
     res
@@ -184,7 +192,6 @@ app.post("/api/essay-analyze", async (req, res) => {
     if (!content) {
       return res.status(400).json({ error: "Essay content is required." });
     }
-    const ai = getGenAI();
 
     const prompt = `
 You are a senior IELTS examiner and admissions essay editor. Review the student's essay below and perform a rigorous critique.
@@ -218,7 +225,7 @@ Do not write any markdown wrappers or comments outside the pure JSON payload.
     });
 
     const text = response.text || "{}";
-    res.json(JSON.parse(text));
+    res.json(cleanAndParseJSON(text));
   } catch (error: any) {
     console.error("AI Essay Analysis Error:", error);
     res
@@ -231,7 +238,6 @@ Do not write any markdown wrappers or comments outside the pure JSON payload.
 app.post("/api/scholarships-recommend", async (req, res) => {
   try {
     const profile = req.body;
-    const ai = getGenAI();
 
     const prompt = `
 Analyze the academic profile of this student from Mongolia and propose 4-5 high-value international/national scholarships.
@@ -280,7 +286,7 @@ Do not write any markdown wrappers outside the pure JSON payload.
     });
 
     const text = response.text || "{}";
-    res.json(JSON.parse(text));
+    res.json(cleanAndParseJSON(text));
   } catch (error: any) {
     console.error("AI Scholarship Finder Error:", error);
     res
@@ -290,12 +296,7 @@ Do not write any markdown wrappers outside the pure JSON payload.
 });
 
 app.get("/api/health", (req, res) => {
-  res.json({
-    status: "healthy",
-    aiConfigured: Boolean(
-      process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY,
-    ),
-  });
+  res.json({ status: "healthy" });
 });
 
 // Serve frontend assets and boot listener
