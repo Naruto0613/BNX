@@ -194,25 +194,20 @@ export default function App() {
           setUserProfile(docSnap.data() as UserProfile);
           setLoadingApp(false);
         } else {
-          // If profile doesn't exist yet, build and write the default
-          const isDemo = currentUser.email === "student@demo.mn" || currentUser.email === "admin@demo.mn";
+          // Create an empty profile for every newly registered user.
           const defaultProfile: UserProfile = {
             uid: currentUser.uid,
-            name: isDemo ? (currentUser.email === "admin@demo.mn" ? "Админ Хэрэглэгч" : "Батын Анандын") : (currentUser.email ? currentUser.email.split("@")[0] : "Монгол Оюутан"),
-            age: isDemo ? 18 : undefined,
+            name: currentUser.email ? currentUser.email.split("@")[0] : "",
+            age: undefined,
             country: "Mongolia",
-            school: isDemo ? "Шинэ Монгол Ахлах Сургууль" : "",
-            gpa: isDemo ? 3.92 : undefined,
-            classRank: isDemo ? "Top 5%" : "",
-            ieltsScore: isDemo ? 7.5 : undefined,
-            satScore: isDemo ? 1490 : undefined,
-            careerInterests: "IT",
-            awards: isDemo ? "1st Place National Hackathon Mongolia, Merit Scholarship" : "",
-            olympiads: isDemo ? "Bronze Medal in National Informatics Olympiad" : "",
-            volunteerActivities: isDemo ? "Organized local community cleanups, tutor at orphanage" : "",
-            leadershipExperience: isDemo ? "Founder of school Tech Club, Basketball assistant captain" : "",
-            programmingSkills: isDemo ? "Python, Javascript, C++ Competitive programming" : "",
-            languageSkills: isDemo ? "Mongolian (Native), English (Fluent), Japanese (TOPIK N5)" : ""
+            school: "",
+            careerInterests: "",
+            awards: "",
+            olympiads: "",
+            volunteerActivities: "",
+            leadershipExperience: "",
+            programmingSkills: "",
+            languageSkills: ""
           };
           try {
             await setDoc(profileRef, cleanUndefined(defaultProfile));
@@ -244,20 +239,7 @@ export default function App() {
     setAuthLoading(true);
     try {
       if (authMode === 'login') {
-        try {
-          await signInWithEmailAndPassword(auth, authEmail, authPassword);
-        } catch (loginErr: any) {
-          // If demo accounts don't exist yet in Firebase, auto-create them
-          if (
-            (authEmail === "student@demo.mn" || authEmail === "admin@demo.mn") &&
-            authPassword === "password123" &&
-            (loginErr.code === "auth/user-not-found" || loginErr.code === "auth/invalid-credential" || loginErr.code === "auth/invalid-login-credentials")
-          ) {
-            await createUserWithEmailAndPassword(auth, authEmail, authPassword);
-          } else {
-            throw loginErr;
-          }
-        }
+        await signInWithEmailAndPassword(auth, authEmail, authPassword);
       } else if (authMode === 'signup') {
         await createUserWithEmailAndPassword(auth, authEmail, authPassword);
       } else if (authMode === 'forgot') {
@@ -278,28 +260,6 @@ export default function App() {
       await signInWithPopup(auth, provider);
     } catch (err: any) {
       setAuthError(err.message || "Google-ээр нэвтрэх үйлдэл амжилтгүй.");
-    }
-  };
-
-  const triggerQuickDemo = async (isAdmin: boolean) => {
-    setAuthError("");
-    setAuthLoading(true);
-    const email = isAdmin ? "admin@demo.mn" : "student@demo.mn";
-    const password = "password123";
-    try {
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (loginErr: any) {
-        if (loginErr.code === "auth/user-not-found" || loginErr.code === "auth/invalid-credential" || loginErr.code === "auth/invalid-login-credentials") {
-          await createUserWithEmailAndPassword(auth, email, password);
-        } else {
-          throw loginErr;
-        }
-      }
-    } catch (err: any) {
-      setAuthError(`Регистр хийхэд алдаа гарлаа: ${err.message}`);
-    } finally {
-      setAuthLoading(false);
     }
   };
 
@@ -577,24 +537,6 @@ export default function App() {
                   >
                     LEARN MORE
                   </a>
-                </div>
-
-                {/* Quick Demo Playground Access inside bottom */}
-                <div className="pt-2">
-                  <div className="bg-neutral-50 border border-neutral-200/60 rounded-2.5xl p-5 space-y-3.5">
-                    <span className="text-[8px] font-extrabold text-neutral-400 uppercase tracking-widest block font-mono">Түргэн туршилт / Sandbox Sandbox Access</span>
-                    <p className="text-[10px] text-neutral-500 leading-relaxed">Нуут үггүйгээр шууд систем рүү нэвтэрч систем ажиллагааг турших:</p>
-                    <div className="grid grid-cols-1 gap-3">
-                      <button
-                        onClick={() => triggerQuickDemo(false)}
-                        id="btn-fast-log-student"
-                        className="bg-black hover:bg-neutral-900 text-white px-3.5 py-2.5 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 focus:outline-none w-full"
-                      >
-                        <UserIcon className="w-4 h-4" />
-                        Оюутан (Туршилт)
-                      </button>
-                    </div>
-                  </div>
                 </div>
 
               </div>

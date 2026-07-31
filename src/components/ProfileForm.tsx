@@ -11,17 +11,17 @@ interface ProfileFormProps {
 
 export default function ProfileForm({ profile, onSave, isLoading }: ProfileFormProps) {
   const [formData, setFormData] = useState<UserProfile>({
-    uid: profile.uid || "",
-    name: profile.name || "",
-    age: profile.age || undefined,
-    country: profile.country || "",
-    school: profile.school || "",
-    gpa: profile.gpa || undefined,
-    classRank: profile.classRank || "",
-    ieltsScore: profile.ieltsScore || undefined,
-    toeflScore: profile.toeflScore || undefined,
-    satScore: profile.satScore || undefined,
-    actScore: profile.actScore || undefined,
+    uid: profile.uid ?? "",
+    name: profile.name ?? "",
+    age: profile.age ?? undefined,
+    country: profile.country ?? "",
+    school: profile.school ?? "",
+    gpa: profile.gpa ?? undefined,
+    classRank: profile.classRank ?? "",
+    ieltsScore: profile.ieltsScore ?? undefined,
+    toeflScore: profile.toeflScore ?? undefined,
+    satScore: profile.satScore ?? undefined,
+    actScore: profile.actScore ?? undefined,
     apCourses: profile.apCourses || "",
     ibCourses: profile.ibCourses || "",
     awards: profile.awards || "",
@@ -48,6 +48,18 @@ export default function ProfileForm({ profile, onSave, isLoading }: ProfileFormP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
+    const invalidScore =
+      (formData.age !== undefined && (formData.age < 13 || formData.age > 100)) ||
+      (formData.gpa !== undefined && (formData.gpa < 0 || formData.gpa > 4)) ||
+      (formData.ieltsScore !== undefined && (formData.ieltsScore < 0 || formData.ieltsScore > 9)) ||
+      (formData.toeflScore !== undefined && (formData.toeflScore < 0 || formData.toeflScore > 120)) ||
+      (formData.satScore !== undefined && (formData.satScore < 400 || formData.satScore > 1600)) ||
+      (formData.actScore !== undefined && (formData.actScore < 1 || formData.actScore > 36));
+
+    if (invalidScore) {
+      setMessage({ type: 'error', text: 'Оруулсан нас эсвэл шалгалтын оноог шалгана уу.' });
+      return;
+    }
     try {
       await onSave(formData);
       setMessage({ type: 'success', text: 'Амжилттай хадгалагдлаа! Сурлагын паспорт шинэчлэгдлээ.' });
