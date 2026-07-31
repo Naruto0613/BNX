@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { University, UserProfile, AIRecommendationMatch } from "../types";
 import { CountryFlag } from "../utils/flags";
 import {
@@ -115,6 +115,40 @@ export default function UniversityFinder({
   const [selectedUni, setSelectedUni] = useState<University | null>(
     universities[0] || null,
   );
+  const [actualImageUrls, setActualImageUrls] = useState<Record<string, string>>({});
+
+  // Load a real campus image for the university currently being viewed. The
+  // static country photo remains only as a fallback when no public image exists.
+  useEffect(() => {
+    if (!selectedUni) return;
+
+    const imageKey = `${selectedUni.country}:${selectedUni.name}`;
+    if (imageKey in actualImageUrls) return;
+
+    const pageTitle = selectedUni.name.replace(/\s*\([^)]*\)/g, "").trim();
+    let cancelled = false;
+
+    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle)}`)
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (!cancelled) {
+          setActualImageUrls((current) => ({
+            ...current,
+            [imageKey]: data?.thumbnail?.source || "",
+          }));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setActualImageUrls((current) => ({ ...current, [imageKey]: "" }));
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [selectedUni, actualImageUrls]);
+
+  const getDisplayImage = (uni: University) =>
+    uni.imageUrl || actualImageUrls[`${uni.country}:${uni.name}`] || getUniversityImage(uni);
 
   // AI Matches state
   const [aiMatches, setAiMatches] = useState<AIRecommendationMatch[]>([]);
@@ -535,7 +569,7 @@ export default function UniversityFinder({
               <div
                 className="relative h-52 w-full rounded-2xl overflow-hidden border border-neutral-800 shadow-xl"
                 style={{
-                  backgroundImage: `linear-gradient(to top, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0.3) 60%, rgba(0, 0, 0, 0) 100%), url(${getUniversityImage(selectedUni)})`,
+                  backgroundImage: `linear-gradient(to top, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0.3) 60%, rgba(0, 0, 0, 0) 100%), url(${getDisplayImage(selectedUni)})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}

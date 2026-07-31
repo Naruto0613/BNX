@@ -567,6 +567,55 @@ function generateSchoolForCountry(name: string, countryName: string, index: numb
   };
 }
 
+// Verified public campus photographs. Entries are only added after the image
+// has been checked to depict the named university.
+const verifiedCampusImages: Record<string, Pick<University, "imageUrl" | "imageSourceUrl">> = {
+  "Harvard University": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Harvard_Science_Center_from_the_Yard.jpg/1280px-Harvard_Science_Center_from_the_Yard.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:Harvard_Science_Center_from_the_Yard.jpg",
+  },
+  "Princeton University": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/At_Princeton_University_2024_010.jpg/1280px-At_Princeton_University_2024_010.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:At_Princeton_University_2024_010.jpg",
+  },
+  "Yale University": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Eastern_cottontail_on_Cross_Campus%2C_Yale_University%2C_New_Haven%2C_Connecticut.jpg/1280px-Eastern_cottontail_on_Cross_Campus%2C_Yale_University%2C_New_Haven%2C_Connecticut.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:Eastern_cottontail_on_Cross_Campus,_Yale_University,_New_Haven,_Connecticut.jpg",
+  },
+  "University of Pennsylvania": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/University_of_Pennsylvania_Campus_20240528.jpg/1280px-University_of_Pennsylvania_Campus_20240528.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:University_of_Pennsylvania_Campus_20240528.jpg",
+  },
+  "Johns Hopkins University": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/East_Gate_of_Johns_Hopkins_University_Homewood_Campus_%282016%2C_Dec%29.jpg/1280px-East_Gate_of_Johns_Hopkins_University_Homewood_Campus_%282016%2C_Dec%29.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:East_Gate_of_Johns_Hopkins_University_Homewood_Campus_(2016,_Dec).jpg",
+  },
+  "Northwestern University": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Northwestern_University_campus%2C_Evanston%2C_IL.jpg/1280px-Northwestern_University_campus%2C_Evanston%2C_IL.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:Northwestern_University_campus,_Evanston,_IL.jpg",
+  },
+  "Stanford University": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Center_for_Clinical_Sciences_Research%2C_Stanford_University_%282025%29-L1007419.jpg/1280px-Center_for_Clinical_Sciences_Research%2C_Stanford_University_%282025%29-L1007419.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:Center_for_Clinical_Sciences_Research,_Stanford_University_(2025)-L1007419.jpg",
+  },
+  "Korea Advanced Institute of Science & Technology (KAIST)": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/IBS%E2%80%93KAIST_Campus_Building.jpg/1280px-IBS%E2%80%93KAIST_Campus_Building.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:IBS%E2%80%93KAIST_Campus_Building.jpg",
+  },
+  "Seoul National University (SNU)": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Seoul_National_University_Yeongeon_Campus_at_Naksan_Park_view.jpg/1280px-Seoul_National_University_Yeongeon_Campus_at_Naksan_Park_view.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:Seoul_National_University_Yeongeon_Campus_at_Naksan_Park_view.jpg",
+  },
+  "The University of Tokyo": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Yasuda_Auditorium_-_Tokyo_University_4.jpg/1280px-Yasuda_Auditorium_-_Tokyo_University_4.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:Yasuda_Auditorium_-_Tokyo_University_4.jpg",
+  },
+  "National University of Mongolia (NUM)": {
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/National_University_of_Mongolia_Khovd_Branch.jpg/1280px-National_University_of_Mongolia_Khovd_Branch.jpg",
+    imageSourceUrl: "https://commons.wikimedia.org/wiki/File:National_University_of_Mongolia_Khovd_Branch.jpg",
+  },
+};
+
 // Generate the complete unified database of universities
 const buildInitialUniversities = (): University[] => {
   const result: University[] = [];
@@ -614,7 +663,10 @@ const buildInitialUniversities = (): University[] => {
     }
   });
 
-  return result;
+  return result.map((university) => ({
+    ...university,
+    ...verifiedCampusImages[university.name],
+  }));
 };
 
 export const initialUniversities: University[] = buildInitialUniversities();

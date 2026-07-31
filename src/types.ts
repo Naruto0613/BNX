@@ -32,6 +32,8 @@ export interface University {
   ranking?: number;
   acceptanceRate?: string;
   website?: string;
+  imageUrl?: string;
+  imageSourceUrl?: string;
   
   // Costs
   tuitionFee?: number;
