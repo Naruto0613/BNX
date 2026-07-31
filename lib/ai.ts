@@ -41,9 +41,11 @@ export async function generateAIContentWithFallback(params: {
   config?: Record<string, unknown>;
 }) {
   const modelsToTry = [
-    "gemini-flash-latest",
+    // Verified against this project's API key. Prefer lower-latency models so
+    // a temporary outage from a larger model does not disable the AI tools.
     "gemini-3.5-flash-lite",
-    "gemini-3-flash-preview",
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash",
   ];
   let lastError: unknown = null;
 
