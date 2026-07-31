@@ -1,4 +1,4 @@
-import { cleanAndParseJSON, generateAIContentWithFallback } from "./ai";
+import { cleanAndParseJSON, generateAIContentWithFallback } from "./ai.js";
 
 export async function recommendUniversities(profile: Record<string, unknown>) {
   const prompt = `
