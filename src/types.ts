@@ -29,12 +29,11 @@ export interface University {
   id: string;
   name: string;
   country: string;
+  imageUrl?: string;
   ranking?: number;
   acceptanceRate?: string;
   website?: string;
-  imageUrl?: string;
-  imageSourceUrl?: string;
-  
+
   // Costs
   tuitionFee?: number;
   dormitoryFee?: number;
@@ -84,7 +83,14 @@ export interface ApplicationTrack {
   userId: string;
   universityId: string;
   universityName: string;
-  status: 'In Progress' | 'Document Stage' | 'Submitted' | 'Interview Scheduled' | 'Admission Offered' | 'Rejected' | 'Scholarship Awarded';
+  status:
+    | "In Progress"
+    | "Document Stage"
+    | "Submitted"
+    | "Interview Scheduled"
+    | "Admission Offered"
+    | "Rejected"
+    | "Scholarship Awarded";
   submittedDocuments: string[]; // List of documents uploaded/checked
   appliedScholarships: string;
   notes?: string;
@@ -126,7 +132,7 @@ export interface AIRecommendationMatch {
   country: string;
   ranking?: number;
   matchPercentage: number;
-  difficulty: 'Reach' | 'Target' | 'Safety';
+  difficulty: "Reach" | "Target" | "Safety";
   gpaFactor?: string;
   testFactor?: string;
   activitiesFactor?: string;

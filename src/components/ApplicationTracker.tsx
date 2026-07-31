@@ -1,7 +1,18 @@
 import React, { useState } from "react";
 import { ApplicationTrack, University } from "../types";
 import { CountryFlag } from "../utils/flags";
-import { CheckSquare, Square, Calendar, Plus, Trash2, Edit3, Bookmark, AlertCircle, RefreshCw } from "lucide-react";
+import { getRealUniversityImage } from "../utils/universityImages";
+import {
+  CheckSquare,
+  Square,
+  Calendar,
+  Plus,
+  Trash2,
+  Edit3,
+  Bookmark,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
 
 interface ApplicationTrackerProps {
   tracks: ApplicationTrack[];
@@ -11,24 +22,24 @@ interface ApplicationTrackerProps {
   isLoading: boolean;
 }
 
-const STATUS_OPTIONS: ApplicationTrack['status'][] = [
-  'In Progress',
-  'Document Stage',
-  'Submitted',
-  'Interview Scheduled',
-  'Admission Offered',
-  'Rejected',
-  'Scholarship Awarded'
+const STATUS_OPTIONS: ApplicationTrack["status"][] = [
+  "In Progress",
+  "Document Stage",
+  "Submitted",
+  "Interview Scheduled",
+  "Admission Offered",
+  "Rejected",
+  "Scholarship Awarded",
 ];
 
-const STATUS_LABELS: Record<ApplicationTrack['status'], string> = {
-  'In Progress': 'Судалж буй',
-  'Document Stage': 'Материал бүрдүүлэлт',
-  'Submitted': 'Илгээсэн',
-  'Interview Scheduled': 'Ярилцлага товлогдсон',
-  'Admission Offered': 'Тэнссэн (Admission)',
-  'Rejected': 'Татгалзсан',
-  'Scholarship Awarded': 'Тэтгэлэг олгогдсон'
+const STATUS_LABELS: Record<ApplicationTrack["status"], string> = {
+  "In Progress": "Судалж буй",
+  "Document Stage": "Материал бүрдүүлэлт",
+  Submitted: "Илгээсэн",
+  "Interview Scheduled": "Ярилцлага товлогдсон",
+  "Admission Offered": "Тэнссэн (Admission)",
+  Rejected: "Татгалзсан",
+  "Scholarship Awarded": "Тэтгэлэг олгогдсон",
 };
 
 const GENERAL_DOCS = [
@@ -38,7 +49,7 @@ const GENERAL_DOCS = [
   "Recommendation Letters (Тодорхойлох захидал)",
   "Financial / Bank Statement (Дансны хуулга)",
   "IELTS/TOEFL score",
-  "SAT score"
+  "SAT score",
 ];
 
 export default function ApplicationTracker({
@@ -46,15 +57,18 @@ export default function ApplicationTracker({
   universities,
   onSaveTrack,
   onDeleteTrack,
-  isLoading
+  isLoading,
 }: ApplicationTrackerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingTrack, setEditingTrack] = useState<ApplicationTrack | null>(null);
+  const [editingTrack, setEditingTrack] = useState<ApplicationTrack | null>(
+    null,
+  );
 
   // New form fields
   const [selectedUniId, setSelectedUniId] = useState("");
   const [customUniName, setCustomUniName] = useState("");
-  const [status, setStatus] = useState<ApplicationTrack['status']>('In Progress');
+  const [status, setStatus] =
+    useState<ApplicationTrack["status"]>("In Progress");
   const [deadline, setDeadline] = useState("");
   const [notes, setNotes] = useState("");
   const [appliedSchol, setAppliedSchol] = useState("");
@@ -64,7 +78,7 @@ export default function ApplicationTracker({
     setEditingTrack(null);
     setSelectedUniId(universities[0]?.id || "");
     setCustomUniName("");
-    setStatus('In Progress');
+    setStatus("In Progress");
     setDeadline("");
     setNotes("");
     setAppliedSchol("");
@@ -75,7 +89,7 @@ export default function ApplicationTracker({
   const handleOpenEdit = (t: ApplicationTrack) => {
     setEditingTrack(t);
     setSelectedUniId(t.universityId);
-    setCustomUniName(t.universityId === 'custom' ? t.universityName : "");
+    setCustomUniName(t.universityId === "custom" ? t.universityName : "");
     setStatus(t.status);
     setDeadline(t.deadline || "");
     setNotes(t.notes || "");
@@ -86,9 +100,9 @@ export default function ApplicationTracker({
 
   const toggleDocument = (docName: string) => {
     if (checkedDocs.includes(docName)) {
-      setCheckedDocs(prev => prev.filter(d => d !== docName));
+      setCheckedDocs((prev) => prev.filter((d) => d !== docName));
     } else {
-      setCheckedDocs(prev => [...prev, docName]);
+      setCheckedDocs((prev) => [...prev, docName]);
     }
   };
 
@@ -99,7 +113,7 @@ export default function ApplicationTracker({
     if (selectedUniId === "custom") {
       uniName = customUniName || "Custom University";
     } else {
-      const match = universities.find(u => u.id === selectedUniId);
+      const match = universities.find((u) => u.id === selectedUniId);
       uniName = match ? match.name : "Selected University";
     }
 
@@ -113,7 +127,7 @@ export default function ApplicationTracker({
       appliedScholarships: appliedSchol,
       deadline,
       notes,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     try {
@@ -125,7 +139,11 @@ export default function ApplicationTracker({
   };
 
   const handleDelete = async (trackId: string) => {
-    if (window.confirm("Уг бүртгэлийг устгах уу? This tracker entry will be permanently removed.")) {
+    if (
+      window.confirm(
+        "Уг бүртгэлийг устгах уу? This tracker entry will be permanently removed.",
+      )
+    ) {
       try {
         await onDeleteTrack(trackId);
       } catch (err: any) {
@@ -143,7 +161,10 @@ export default function ApplicationTracker({
             <Bookmark className="w-5 h-5 text-neutral-400" />
             Аппликейшн Хөтөч
           </h2>
-          <p className="text-xs text-neutral-400 mt-1">Илгээсэн материал, виз, хариу хүлээж буй сургуулиудын хугацааг нэг дор хянах</p>
+          <p className="text-xs text-neutral-400 mt-1">
+            Илгээсэн материал, виз, хариу хүлээж буй сургуулиудын хугацааг нэг
+            дор хянах
+          </p>
         </div>
         {!showAddForm && (
           <button
@@ -159,7 +180,11 @@ export default function ApplicationTracker({
 
       {/* TRACKING CARD FORM */}
       {showAddForm && (
-        <form id="track-form" onSubmit={handleSave} className="bg-neutral-900/50 border border-neutral-800 rounded-2.5xl p-6 md:p-8 space-y-6">
+        <form
+          id="track-form"
+          onSubmit={handleSave}
+          className="bg-neutral-900/50 border border-neutral-800 rounded-2.5xl p-6 md:p-8 space-y-6"
+        >
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white text-md">
               {editingTrack ? "Бүртгэл засварлах" : "Шинэ сургууль хянах"}
@@ -175,21 +200,27 @@ export default function ApplicationTracker({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1">Сургууль сонгох</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1">
+                Сургууль сонгох
+              </label>
               <select
                 id="form-track-uni"
                 value={selectedUniId}
                 onChange={(e) => {
                   setSelectedUniId(e.target.value);
                   if (e.target.value !== "custom") {
-                    const match = universities.find(u => u.id === e.target.value);
+                    const match = universities.find(
+                      (u) => u.id === e.target.value,
+                    );
                     if (match?.deadline) setDeadline(match.deadline);
                   }
                 }}
                 className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white"
               >
-                {universities.map(u => (
-                  <option key={u.id} value={u.id}>{u.name} ({u.country})</option>
+                {universities.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name} ({u.country})
+                  </option>
                 ))}
                 <option value="custom">-- Өөр сургууль бичих --</option>
               </select>
@@ -197,7 +228,9 @@ export default function ApplicationTracker({
 
             {selectedUniId === "custom" && (
               <div>
-                <label className="block text-xs font-medium text-neutral-400 mb-1">Сургуулийн нэр</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">
+                  Сургуулийн нэр
+                </label>
                 <input
                   id="form-track-custom-uni"
                   type="text"
@@ -211,21 +244,29 @@ export default function ApplicationTracker({
             )}
 
             <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1">Аппликейшны Төлөв</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1">
+                Аппликейшны Төлөв
+              </label>
               <select
                 id="form-track-status"
                 value={status}
-                onChange={(e) => setStatus(e.target.value as ApplicationTrack['status'])}
+                onChange={(e) =>
+                  setStatus(e.target.value as ApplicationTrack["status"])
+                }
                 className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white"
               >
-                {STATUS_OPTIONS.map(opt => (
-                  <option key={opt} value={opt}>{STATUS_LABELS[opt] || opt}</option>
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {STATUS_LABELS[opt] || opt}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1">Эцсийн хугацаа</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1">
+                Эцсийн хугацаа
+              </label>
               <input
                 id="form-track-deadline"
                 type="text"
@@ -237,7 +278,9 @@ export default function ApplicationTracker({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1">Хүсэлт гаргасан Тэтгэлэг</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1">
+                Хүсэлт гаргасан Тэтгэлэг
+              </label>
               <input
                 id="form-track-schol"
                 type="text"
@@ -252,15 +295,20 @@ export default function ApplicationTracker({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-neutral-800">
             {/* Checklist of documents */}
             <div>
-              <p className="text-xs font-semibold text-neutral-400 mb-2">Бэлдсэн материалын жагсаалт</p>
-              <div id="track-docs-checklist" className="space-y-2 max-h-[220px] overflow-y-auto pr-2">
-                {GENERAL_DOCS.map(doc => {
+              <p className="text-xs font-semibold text-neutral-400 mb-2">
+                Бэлдсэн материалын жагсаалт
+              </p>
+              <div
+                id="track-docs-checklist"
+                className="space-y-2 max-h-[220px] overflow-y-auto pr-2"
+              >
+                {GENERAL_DOCS.map((doc) => {
                   const isChecked = checkedDocs.includes(doc);
                   return (
                     <button
                       key={doc}
                       type="button"
-                      id={`btn-toggle-doc-${doc.replace(/\s+/g, '-')}`}
+                      id={`btn-toggle-doc-${doc.replace(/\s+/g, "-")}`}
                       onClick={() => toggleDocument(doc)}
                       className="w-full text-left py-1.5 px-2.5 rounded-lg hover:bg-neutral-950/50 flex items-center gap-3 text-neutral-300 text-xs text-wrap transition-all"
                     >
@@ -278,7 +326,9 @@ export default function ApplicationTracker({
 
             {/* Application Notes */}
             <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1">Нэмэлт тэмдэглэл</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1">
+                Нэмэлт тэмдэглэл
+              </label>
               <textarea
                 id="form-track-notes"
                 value={notes}
@@ -311,29 +361,40 @@ export default function ApplicationTracker({
       )}
 
       {/* TRACKS LIST */}
-      <div id="tracks-cards-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tracks.map(t => {
-          const uniMatch = universities.find(u => u.id === t.universityId);
+      <div
+        id="tracks-cards-list"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        {tracks.map((t) => {
+          const uniMatch = universities.find((u) => u.id === t.universityId);
           const countryName = uniMatch ? uniMatch.country : "";
           return (
             <div
               key={t.id}
               id={`track-card-${t.id}`}
-              className="bg-neutral-900/30 border border-neutral-800 rounded-2xl p-5 hover:border-neutral-700 transition-all flex flex-col justify-between group relative overflow-hidden"
+              style={{
+                backgroundImage: `linear-gradient(to bottom, rgba(10, 10, 10, 0.94) 30%, rgba(10, 10, 10, 0.98) 100%), url(${getRealUniversityImage({ name: t.universityName, country: countryName })})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+              className="border border-neutral-800 rounded-2xl p-5 hover:border-neutral-700 transition-all flex flex-col justify-between group relative overflow-hidden"
             >
               {/* Top row */}
               <div>
                 <div className="flex items-center justify-between gap-1 mb-2.5">
-                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                    t.status === 'Admission Offered' || t.status === 'Scholarship Awarded'
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                      : t.status === 'Rejected'
-                      ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                      : 'bg-neutral-800 text-neutral-300'
-                  }`}>
+                  <span
+                    className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                      t.status === "Admission Offered" ||
+                      t.status === "Scholarship Awarded"
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : t.status === "Rejected"
+                          ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                          : "bg-neutral-800 text-neutral-300"
+                    }`}
+                  >
                     {STATUS_LABELS[t.status] || t.status}
                   </span>
-                  
+
                   {/* Actions */}
                   <div className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
                     <button
@@ -356,10 +417,15 @@ export default function ApplicationTracker({
                 </div>
 
                 <h4 className="font-bold text-white text-sm line-clamp-2 leading-snug flex items-center gap-1.5">
-                  {countryName && <CountryFlag countryNameOrCode={countryName} className="w-4 h-3 rounded-sm object-cover shadow-sm shrink-0" />}
+                  {countryName && (
+                    <CountryFlag
+                      countryNameOrCode={countryName}
+                      className="w-4 h-3 rounded-sm object-cover shadow-sm shrink-0"
+                    />
+                  )}
                   <span>{t.universityName}</span>
                 </h4>
-                
+
                 {/* Deadline */}
                 {t.deadline && (
                   <div className="flex items-center gap-1.5 mt-2 text-neutral-500 text-xs">
@@ -367,15 +433,19 @@ export default function ApplicationTracker({
                     <span>Хугацаа: {t.deadline}</span>
                   </div>
                 )}
-  
+
                 {/* Progress checklist summary */}
                 <div className="mt-4 pt-3.5 border-t border-neutral-850 space-y-1.5">
-                  <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">Материал бэлтгэл</p>
+                  <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    Материал бэлтгэл
+                  </p>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-neutral-950 h-1.5 rounded-full overflow-hidden">
                       <div
                         className="bg-neutral-400 h-full transition-all duration-300"
-                        style={{ width: `${(t.submittedDocuments?.length || 0) / GENERAL_DOCS.length * 100}%` }}
+                        style={{
+                          width: `${((t.submittedDocuments?.length || 0) / GENERAL_DOCS.length) * 100}%`,
+                        }}
                       />
                     </div>
                     <span className="text-[10px] text-neutral-400 font-mono">
@@ -383,15 +453,19 @@ export default function ApplicationTracker({
                     </span>
                   </div>
                 </div>
-  
+
                 {/* Scholarships */}
                 {t.appliedScholarships && (
                   <div className="mt-3.5 bg-neutral-950/40 p-2.5 rounded-xl border border-neutral-850 grid grid-cols-1 gap-0.5">
-                    <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">Хүссэн тэтгэлэг:</span>
-                    <span className="text-[11px] text-neutral-300 font-medium truncate">{t.appliedScholarships}</span>
+                    <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">
+                      Хүссэн тэтгэлэг:
+                    </span>
+                    <span className="text-[11px] text-neutral-300 font-medium truncate">
+                      {t.appliedScholarships}
+                    </span>
                   </div>
                 )}
-  
+
                 {/* Personal Notes */}
                 {t.notes && (
                   <p className="text-neutral-400 text-xs mt-3 bg-neutral-950/20 p-2.5 rounded-xl border border-neutral-850/60 line-clamp-3 italic">
@@ -399,21 +473,29 @@ export default function ApplicationTracker({
                   </p>
                 )}
               </div>
-  
+
               {/* Last updated timestamp */}
               <div className="mt-4 pt-2.5 border-t border-neutral-850/40 text-[9px] text-neutral-600 font-mono text-right">
-                Шинэчлэв: {t.updatedAt ? new Date(t.updatedAt).toLocaleDateString() : 'N/A'}
+                Шинэчлэв:{" "}
+                {t.updatedAt
+                  ? new Date(t.updatedAt).toLocaleDateString()
+                  : "N/A"}
               </div>
             </div>
           );
         })}
 
-
         {tracks.length === 0 && (
           <div className="col-span-full py-16 bg-neutral-900/10 border border-dashed border-neutral-850 rounded-2xl flex flex-col items-center justify-center text-center p-6">
             <AlertCircle className="w-10 h-10 text-neutral-600 mb-3" />
-            <h4 className="font-semibold text-neutral-300 text-sm">Хяналтын хуудас хоосон байна</h4>
-            <p className="text-xs text-neutral-500 max-w-sm mt-1">Одоогоор идэвхтэй хянах аппликейшн байхгүй байна. Баруун дээд хэсэгт орших &lsquo;Сургууль нэмэх&rsquo; товчлуураар бүртгэл үүсгээрэй.</p>
+            <h4 className="font-semibold text-neutral-300 text-sm">
+              Хяналтын хуудас хоосон байна
+            </h4>
+            <p className="text-xs text-neutral-500 max-w-sm mt-1">
+              Одоогоор идэвхтэй хянах аппликейшн байхгүй байна. Баруун дээд
+              хэсэгт орших &lsquo;Сургууль нэмэх&rsquo; товчлуураар бүртгэл
+              үүсгээрэй.
+            </p>
             <button
               onClick={handleOpenAdd}
               className="mt-4 text-xs font-bold text-white bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 px-4 py-2 rounded-xl"

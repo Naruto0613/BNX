@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { University, UserProfile, AIRecommendationMatch } from "../types";
 import { CountryFlag } from "../utils/flags";
+import { getRealUniversityImage } from "../utils/universityImages";
 import {
   Search,
   MapPin,
@@ -22,89 +23,6 @@ interface UniversityFinderProps {
   onTrackUniversity: (uni: University) => void;
 }
 
-// Deterministic high-quality background images matching each country
-const getUniversityImage = (uni: { name: string; country: string }) => {
-  const imagesByCountry: Record<string, string[]> = {
-    USA: [
-      "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1622397333309-3056849fc7ec?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80",
-    ],
-    Canada: [
-      "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1535982330050-f1c2fb79ff78?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1527891751199-7225231a68dd?auto=format&fit=crop&w=800&q=80",
-    ],
-    "United Kingdom": [
-      "https://images.unsplash.com/photo-1548625361-155deee2614a?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1541018939-01cd869ff323?auto=format&fit=crop&w=800&q=80",
-    ],
-    "South Korea": [
-      "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1616137422495-1e9e46e2aa77?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1541829017064-7753e09d955e?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80",
-    ],
-    Japan: [
-      "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?auto=format&fit=crop&w=800&q=80",
-    ],
-    China: [
-      "https://images.unsplash.com/photo-1508804185872-d7bab216b29a?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?auto=format&fit=crop&w=800&q=80",
-    ],
-    Germany: [
-      "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1599946347371-68eb71b16afc?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80",
-    ],
-    Australia: [
-      "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1527142879015-19337fde52fc?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1504509546545-e000b4a62425?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
-    ],
-    Singapore: [
-      "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1568992687947-868a62a9f521?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80",
-    ],
-    Mongolia: [
-      "https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1523731407965-2430cd12f5e4?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1578925573774-1559db2b449b?auto=format&fit=crop&w=800&q=80",
-    ],
-  };
-
-  const defaultImages = [
-    "https://images.unsplash.com/photo-1607237138185-eedd996e5b09?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80",
-  ];
-
-  const countryImages = imagesByCountry[uni.country] || defaultImages;
-
-  // Deterministic selector based on university name string
-  let hash = 0;
-  for (let i = 0; i < uni.name.length; i++) {
-    hash = uni.name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % countryImages.length;
-  return countryImages[index];
-};
-
 export default function UniversityFinder({
   universities,
   profile,
@@ -115,40 +33,6 @@ export default function UniversityFinder({
   const [selectedUni, setSelectedUni] = useState<University | null>(
     universities[0] || null,
   );
-  const [actualImageUrls, setActualImageUrls] = useState<Record<string, string>>({});
-
-  // Load a real campus image for the university currently being viewed. The
-  // static country photo remains only as a fallback when no public image exists.
-  useEffect(() => {
-    if (!selectedUni) return;
-
-    const imageKey = `${selectedUni.country}:${selectedUni.name}`;
-    if (imageKey in actualImageUrls) return;
-
-    const pageTitle = selectedUni.name.replace(/\s*\([^)]*\)/g, "").trim();
-    let cancelled = false;
-
-    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle)}`)
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => {
-        if (!cancelled) {
-          setActualImageUrls((current) => ({
-            ...current,
-            [imageKey]: data?.thumbnail?.source || "",
-          }));
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setActualImageUrls((current) => ({ ...current, [imageKey]: "" }));
-        }
-      });
-
-    return () => { cancelled = true; };
-  }, [selectedUni, actualImageUrls]);
-
-  const getDisplayImage = (uni: University) =>
-    uni.imageUrl || actualImageUrls[`${uni.country}:${uni.name}`] || getUniversityImage(uni);
 
   // AI Matches state
   const [aiMatches, setAiMatches] = useState<AIRecommendationMatch[]>([]);
@@ -342,7 +226,7 @@ export default function UniversityFinder({
                 key={i}
                 id={`ai-match-card-${i}`}
                 style={{
-                  backgroundImage: `linear-gradient(to bottom, rgba(10, 10, 10, 0.94) 30%, rgba(10, 10, 10, 0.98) 100%), url(${getUniversityImage({ name: m.universityName, country: m.country })})`,
+                  backgroundImage: `linear-gradient(to bottom, rgba(10, 10, 10, 0.94) 30%, rgba(10, 10, 10, 0.98) 100%), url(${getRealUniversityImage({ name: m.universityName, country: m.country })})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -495,7 +379,7 @@ export default function UniversityFinder({
                 id={`btn-select-uni-${u.id}`}
                 onClick={() => setSelectedUni(u)}
                 style={{
-                  backgroundImage: `linear-gradient(to right, rgba(10, 10, 10, 0.92) 30%, rgba(10, 10, 10, 0.5) 100%), url(${getUniversityImage(u)})`,
+                  backgroundImage: `linear-gradient(to right, rgba(10, 10, 10, 0.92) 30%, rgba(10, 10, 10, 0.5) 100%), url(${getRealUniversityImage(u)})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -569,7 +453,7 @@ export default function UniversityFinder({
               <div
                 className="relative h-52 w-full rounded-2xl overflow-hidden border border-neutral-800 shadow-xl"
                 style={{
-                  backgroundImage: `linear-gradient(to top, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0.3) 60%, rgba(0, 0, 0, 0) 100%), url(${getDisplayImage(selectedUni)})`,
+                  backgroundImage: `linear-gradient(to top, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0.3) 60%, rgba(0, 0, 0, 0) 100%), url(${getRealUniversityImage(selectedUni)})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
