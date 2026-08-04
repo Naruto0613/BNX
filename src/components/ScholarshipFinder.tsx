@@ -137,8 +137,8 @@ export default function ScholarshipFinder({
           </button>
           {!profile.name && (
             <p className="text-[10px] text-amber-400/80 mt-1 flex items-center gap-1 font-mono">
-              <AlertCircle className="w-3.5 h-3.5" /> Эхлээд &lsquo;Хувийн
-              паспорт&rsquo; табт орж голч мэдээллээ бүртгүүлнэ үү.
+              <AlertCircle className="w-3.5 h-3.5" /> Эхлээд &lsquo;Академик
+              Профайл&rsquo; табт орж голч мэдээллээ бүртгүүлнэ үү.
             </p>
           )}
         </div>

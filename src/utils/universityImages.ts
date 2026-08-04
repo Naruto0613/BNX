@@ -20,7 +20,6 @@ const SPECIFIC_UNIVERSITY_IMAGES: Record<string, string> = {
   "cornell": "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1000&q=80",
   "chicago": "https://images.unsplash.com/photo-1541829017064-7753e09d955e?auto=format&fit=crop&w=1000&q=80",
 
-  // --- UK ---
   "oxford": "https://images.unsplash.com/photo-1548625361-155deee2614a?auto=format&fit=crop&w=1000&q=80",
   "cambridge": "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1000&q=80",
   "imperial": "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=1000&q=80",
@@ -29,7 +28,6 @@ const SPECIFIC_UNIVERSITY_IMAGES: Record<string, string> = {
   "edinburgh": "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1000&q=80",
   "manchester": "https://images.unsplash.com/photo-1580837119756-563d608ee1bf?auto=format&fit=crop&w=1000&q=80",
 
-  // --- CANADA ---
   "toronto": "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?auto=format&fit=crop&w=1000&q=80",
   "ubc": "https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?auto=format&fit=crop&w=1000&q=80",
   "british columbia": "https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?auto=format&fit=crop&w=1000&q=80",

@@ -79,55 +79,140 @@ export default function UniversityFinder({
     }
   };
 
-  // Internal calculator logic fallback
+  // Internal calculator logic accounting for all rich structured profile details
   const getClientSideCalculations = (u: University) => {
     let match = 50;
     const reasons: string[] = [];
 
-    // gpa factor
+    // 1. GPA Factor
     if (profile.gpa && u.minGpa) {
-      if (profile.gpa >= u.minGpa) {
-        match += 15;
-        reasons.push("Сурлагын голч дүн (GPA) шаардлага хангасан");
+      if (profile.gpa >= u.minGpa + 0.3) {
+        match += 18;
+        reasons.push(
+          `GPA (${profile.gpa}) нь шаардагдах ${u.minGpa}-аас өндөр байна (+18%)`,
+        );
+      } else if (profile.gpa >= u.minGpa) {
+        match += 12;
+        reasons.push(`GPA (${profile.gpa}) шаардлага хангасан (+12%)`);
       } else {
         match -= 15;
-        reasons.push("Сурлагын голч дүн (GPA) доод хязгаараас доогуур байна");
+        reasons.push(
+          `GPA (${profile.gpa}) нь доод босго (${u.minGpa})-оос доогуур (-15%)`,
+        );
       }
     }
 
-    // language factor
-    if (profile.ieltsScore && u.ieltsMin) {
-      if (profile.ieltsScore >= u.ieltsMin) {
+    // 2. Language Score Factor (IELTS / TOEFL / DET)
+    const langScore =
+      profile.ieltsScore ||
+      (profile.toeflScore ? profile.toeflScore / 15 : 0) ||
+      (profile.detScore ? profile.detScore / 20 : 0);
+    if (langScore && u.ieltsMin) {
+      if (langScore >= u.ieltsMin + 1.0) {
         match += 15;
-        reasons.push("IELTS оноо хангалттай");
+        reasons.push(
+          `Хэлний оноо (IELTS ${langScore}) сургуулийн босгоноос өндөр (+15%)`,
+        );
+      } else if (langScore >= u.ieltsMin) {
+        match += 10;
+        reasons.push(
+          `Хэлний оноо (IELTS ${langScore}) шаардлагад нийцсэн (+10%)`,
+        );
       } else {
-        match -= 15;
-        reasons.push("IELTS оноог сайжруулах шаардлагатай");
+        match -= 12;
+        reasons.push(
+          `Хэлний оноог сайжруулах шаардлагатай (Хамгийн багадаа IELTS ${u.ieltsMin})`,
+        );
       }
     }
 
-    // sat factor
+    // 3. Standardized Test Factor (SAT / ACT)
     if (profile.satScore && u.satMin) {
-      if (profile.satScore >= u.satMin) {
+      if (profile.satScore >= u.satMin + 80) {
         match += 15;
-        reasons.push("SAT оноогоор давуу тал үүсгэсэн");
+        reasons.push(
+          `SAT оноо (${profile.satScore}) сургуулийн дунджаас (>=${u.satMin}) дээгүүр (+15%)`,
+        );
+      } else if (profile.satScore >= u.satMin) {
+        match += 10;
+        reasons.push(`SAT оноо (${profile.satScore}) босго хангасан (+10%)`);
       } else {
-        match -= 5;
-        reasons.push("SAT оноо дунджаас бага зэрэг доор байна");
+        match -= 8;
+        reasons.push(
+          `SAT оноо дунджаас доогуур байна (${profile.satScore} / ${u.satMin})`,
+        );
       }
     }
 
-    // honors
-    if (profile.olympiads || profile.awards) {
-      match += 10;
+    // 4. Structured Awards & Honors Factor
+    if (profile.awardsList && profile.awardsList.length > 0) {
+      const hasGlobal = profile.awardsList.some(
+        (a) => a.level === "International" || a.level === "Global",
+      );
+      const hasNational = profile.awardsList.some(
+        (a) => a.level === "National",
+      );
+      if (hasGlobal) {
+        match += 15;
+        reasons.push("Олон улсын хэмжээний медаль, шагналуудтай (+15%)");
+      } else if (hasNational) {
+        match += 10;
+        reasons.push("Улсын хэмжээний шагнал олимпиадын амжилттай (+10%)");
+      } else {
+        match += 5;
+        reasons.push("Аймаг/Нийслэлийн шагналуудтай (+5%)");
+      }
+    } else if (profile.olympiads || profile.awards) {
+      match += 8;
+      reasons.push("Шагнал, олимпиадын амжилттай (+8%)");
     }
 
-    // bound match
-    match = Math.max(5, Math.min(99, match));
+    // 5. Extracurriculars & Leadership Factor
+    if (profile.activitiesList && profile.activitiesList.length > 0) {
+      const totalHours = profile.activitiesList.reduce(
+        (sum, act) => sum + (Number(act.hoursPerWeek) || 0),
+        0,
+      );
+      const isLeader = profile.activitiesList.some((act) =>
+        /founder|president|leader|head|director/i.test(act.role),
+      );
+      if (isLeader) {
+        match += 10;
+        reasons.push(
+          "Нийгмийн ба удирдах манлайлах туршлага (President/Founder/Leader) (+10%)",
+        );
+      }
+      if (totalHours > 10) {
+        match += 5;
+        reasons.push(
+          `Нийт хичээлээс гадуурх ажилд зарцуулсан цаг өндөр (${totalHours} цаг/7 хоног) (+5%)`,
+        );
+      }
+    }
 
-    // difficulty classification
+    // 6. Research & Publications Factor
+    if (profile.researchList && profile.researchList.length > 0) {
+      match += 8;
+      reasons.push("Судалгааны өгүүлэл, бүтээлтэй (+8%)");
+    }
+
+    // 7. Student Preferences & Country Match Factor
+    if (
+      profile.preferences?.preferredCountries &&
+      profile.preferences.preferredCountries.length > 0
+    ) {
+      if (profile.preferences.preferredCountries.includes(u.country)) {
+        match += 5;
+        reasons.push(`Хүссэн улстай тохирч байна (${u.country}) (+5%)`);
+      }
+    }
+
+    // Bound match percentage cleanly between 10% and 98%
+    match = Math.max(10, Math.min(98, match));
+
+    // Difficulty classification
     let difficulty: "Reach" | "Target" | "Safety" = "Target";
-    if (match < 40) {
+    if (match < 45) {
       difficulty = "Reach";
     } else if (match > 75) {
       difficulty = "Safety";
@@ -201,7 +286,7 @@ export default function UniversityFinder({
           {!profile.name && (
             <p className="text-[10px] text-amber-400/80 mt-1 flex items-center gap-1 font-mono">
               <AlertCircle className="w-3.5 h-3.5" /> Эхлээд &lsquo;Хувийн
-              паспорт&rsquo; табт очиж голч мэдээллээ бүртгэнэ үү.
+              CV&rsquo; табт очиж голч мэдээллээ бүртгэнэ үү.
             </p>
           )}
         </div>

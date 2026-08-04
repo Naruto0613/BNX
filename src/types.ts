@@ -1,6 +1,158 @@
+export interface AwardItem {
+  id: string;
+  awardName: string;
+  competitionName: string;
+  category:
+    | "Academic"
+    | "Science"
+    | "Mathematics"
+    | "Programming"
+    | "Robotics"
+    | "Business"
+    | "Sports"
+    | "Arts"
+    | "Language"
+    | "Other";
+  level:
+    | "School"
+    | "District"
+    | "City"
+    | "Province"
+    | "National"
+    | "Regional"
+    | "International"
+    | "Global";
+  awardType:
+    | "Champion"
+    | "Gold"
+    | "Silver"
+    | "Bronze"
+    | "Finalist"
+    | "Participant"
+    | "Honorable Mention"
+    | "Scholarship"
+    | "Research Award";
+  year: string;
+  organizer?: string;
+  certificateUrl?: string;
+  description?: string;
+}
+
+export interface ActivityItem {
+  id: string;
+  activityType:
+    | "Leadership"
+    | "Volunteer"
+    | "Research"
+    | "Internship"
+    | "Club"
+    | "Sports"
+    | "Music"
+    | "Art"
+    | "Business"
+    | "Startup"
+    | "Hackathon"
+    | "Debate"
+    | "Competition"
+    | "Community Service"
+    | "Teaching"
+    | "Work Experience"
+    | "Other";
+  role:
+    | "Founder"
+    | "Co-Founder"
+    | "President"
+    | "Vice President"
+    | "Captain"
+    | "Leader"
+    | "Coordinator"
+    | "Member"
+    | "Volunteer"
+    | "Research Assistant"
+    | "Intern"
+    | "Employee";
+  organization: string;
+  startDate?: string;
+  endDate?: string;
+  hoursPerWeek?: number;
+  membersLed?: number;
+  beneficiaries?: number;
+  achievements?: string;
+  certificateUrl?: string;
+}
+
+export interface ResearchItem {
+  id: string;
+  title: string;
+  published: "Yes" | "No";
+  conferenceOrJournal?: string;
+  researchArea?: string;
+  supervisor?: string;
+  certificateUrl?: string;
+}
+
+export interface LanguageItem {
+  id: string;
+  language: string;
+  reading: "Basic" | "Intermediate" | "Fluent" | "Native";
+  writing: "Basic" | "Intermediate" | "Fluent" | "Native";
+  listening: "Basic" | "Intermediate" | "Fluent" | "Native";
+  speaking: "Basic" | "Intermediate" | "Fluent" | "Native";
+  overallLevel: "Basic" | "Intermediate" | "Fluent" | "Native";
+}
+
+export interface DocumentItem {
+  id: string;
+  type:
+    | "Transcript"
+    | "Passport"
+    | "CV"
+    | "Recommendation Letter"
+    | "Personal Statement"
+    | "IELTS"
+    | "SAT"
+    | "TOEFL"
+    | "Awards"
+    | "Certificates";
+  status: "Uploaded" | "Missing";
+  fileName?: string;
+  fileUrl?: string;
+  updatedAt?: string;
+}
+
+export interface UniversityPreferences {
+  preferredCountries: string[];
+  budgetAnnualUsd?: number;
+  needScholarship: "Yes" | "No";
+  preferredClimate?: "Warm" | "Cold" | "Temperate" | "Any";
+  preferredCampusSize?: "Small" | "Medium" | "Large" | "Any";
+  preferredCitySize?:
+    | "Major Metropolis"
+    | "Medium City"
+    | "College Town"
+    | "Any";
+  preferredUniversityType?:
+    | "Public"
+    | "Private"
+    | "Research"
+    | "Liberal Arts"
+    | "Any";
+  careerGoal?: string;
+}
+
 export interface UserProfile {
   uid: string;
   name: string;
+  photoUrl?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  bioSummary?: string;
+  workExperience?: string;
+  dob?: string;
+  nationality?: string;
+  city?: string;
+  graduationYear?: number;
   age?: number;
   country?: string;
   school?: string;
@@ -8,19 +160,29 @@ export interface UserProfile {
   classRank?: string;
   ieltsScore?: number;
   toeflScore?: number;
+  detScore?: number;
   satScore?: number;
   actScore?: number;
   apCourses?: string;
   ibCourses?: string;
   awards?: string;
+  awardsList?: AwardItem[];
   olympiads?: string;
   competitions?: string;
   volunteerActivities?: string;
   leadershipExperience?: string;
   extracurricularActivities?: string;
+  activitiesList?: ActivityItem[];
+  researchList?: ResearchItem[];
+  languagesList?: LanguageItem[];
   programmingSkills?: string;
+  selectedProgrammingSkills?: string[];
+  selectedSoftSkills?: string[];
+  selectedCertificates?: string[];
   languageSkills?: string;
   careerInterests?: string; // e.g. "Engineering", "IT", "Business", "Medicine", "Arts", "Science", "Other"
+  documentsList?: DocumentItem[];
+  preferences?: UniversityPreferences;
   createdAt?: any;
   updatedAt?: any;
 }
