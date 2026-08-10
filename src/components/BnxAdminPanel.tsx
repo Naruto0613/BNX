@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Users, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
-  ShieldCheck, 
-  Search, 
-  RefreshCw, 
-  AlertCircle, 
+import {
+  Users,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  ShieldCheck,
+  Search,
+  RefreshCw,
+  AlertCircle,
   CreditCard,
   Hash,
   Mail,
   User,
   Calendar,
   ChevronRight,
-  Filter
+  Filter,
 } from "lucide-react";
 import { PaymentRequest, AdminStats } from "../types";
 import BnxLogo from "./BnxLogo";
@@ -24,7 +24,10 @@ interface BnxAdminPanelProps {
   adminEmail: string;
 }
 
-export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelProps) {
+export default function BnxAdminPanel({
+  adminUid,
+  adminEmail,
+}: BnxAdminPanelProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<AdminStats>({
@@ -32,15 +35,18 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
     pendingRequests: 0,
     approvedRequests: 0,
     declinedRequests: 0,
-    activeUsers: 0
+    activeUsers: 0,
   });
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<'pending' | 'approved' | 'declined' | 'all'>('pending');
+  const [statusFilter, setStatusFilter] = useState<
+    "pending" | "approved" | "declined" | "all"
+  >("pending");
 
   // Modal for declining payment with optional reason
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
-  const [selectedReqForDecline, setSelectedReqForDecline] = useState<PaymentRequest | null>(null);
+  const [selectedReqForDecline, setSelectedReqForDecline] =
+    useState<PaymentRequest | null>(null);
   const [declineReason, setDeclineReason] = useState("");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [actionSuccessMsg, setActionSuccessMsg] = useState<string | null>(null);
@@ -49,7 +55,9 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/data?adminUid=${encodeURIComponent(adminUid)}&adminEmail=${encodeURIComponent(adminEmail)}`);
+      const res = await fetch(
+        `/api/admin/data?adminUid=${encodeURIComponent(adminUid)}&adminEmail=${encodeURIComponent(adminEmail)}`,
+      );
       const data = await res.json();
 
       if (!res.ok || data.error) {
@@ -71,7 +79,11 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
   }, [adminUid, adminEmail]);
 
   const handleApprove = async (reqItem: PaymentRequest) => {
-    if (!confirm(`${reqItem.studentName} (${reqItem.transactionReference}) сурагчийн 100,000₮ төлбөрийг БАТАЛГААЖУУЛАХ уу?`)) {
+    if (
+      !confirm(
+        `${reqItem.studentName} (${reqItem.transactionReference}) сурагчийн 100,000₮ төлбөрийг БАТАЛГААЖУУЛАХ уу?`,
+      )
+    ) {
       return;
     }
 
@@ -85,8 +97,8 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
           adminUid,
           adminEmail,
           requestId: reqItem.id,
-          userId: reqItem.userId
-        })
+          userId: reqItem.userId,
+        }),
       });
 
       const data = await res.json();
@@ -94,7 +106,9 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
         throw new Error(data.error || "Баталгаажуулахад алдаа гарлаа.");
       }
 
-      setActionSuccessMsg(`${reqItem.studentName} сурагчийн BNX эрх амжилттай идэвхжлээ.`);
+      setActionSuccessMsg(
+        `${reqItem.studentName} сурагчийн BNX эрх амжилттай идэвхжлээ.`,
+      );
       await fetchAdminData();
     } catch (err: any) {
       alert(err.message || "Баталгаажуулахад алдаа гарлаа.");
@@ -123,8 +137,8 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
           adminEmail,
           requestId: selectedReqForDecline.id,
           userId: selectedReqForDecline.userId,
-          reason: declineReason.trim()
-        })
+          reason: declineReason.trim(),
+        }),
       });
 
       const data = await res.json();
@@ -132,7 +146,9 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
         throw new Error(data.error || "Татгалзахад алдаа гарлаа.");
       }
 
-      setActionSuccessMsg(`${selectedReqForDecline.studentName} сурагчийн хүсэлт цуцлагдлаа.`);
+      setActionSuccessMsg(
+        `${selectedReqForDecline.studentName} сурагчийн хүсэлт цуцлагдлаа.`,
+      );
       setDeclineModalOpen(false);
       setSelectedReqForDecline(null);
       await fetchAdminData();
@@ -145,12 +161,15 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
 
   // Filter requests
   const filteredRequests = requests.filter((reqItem) => {
-    const matchesStatus = statusFilter === 'all' || reqItem.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || reqItem.status === statusFilter;
     const q = searchQuery.toLowerCase().trim();
-    const matchesQuery = !q || 
+    const matchesQuery =
+      !q ||
       (reqItem.studentName && reqItem.studentName.toLowerCase().includes(q)) ||
       (reqItem.email && reqItem.email.toLowerCase().includes(q)) ||
-      (reqItem.transactionReference && reqItem.transactionReference.toLowerCase().includes(q));
+      (reqItem.transactionReference &&
+        reqItem.transactionReference.toLowerCase().includes(q));
 
     return matchesStatus && matchesQuery;
   });
@@ -159,7 +178,7 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
     if (!isoStr) return "-";
     try {
       const d = new Date(isoStr);
-      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
     } catch (e) {
       return isoStr;
     }
@@ -167,7 +186,6 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6 font-sans text-neutral-100 antialiased">
-      
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-6">
         <div>
@@ -183,7 +201,8 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
             Төлбөр шалгах ба Хэрэглэгчийн удирдлага
           </h1>
           <p className="text-xs text-neutral-400 mt-1">
-            Оюутнуудын 100,000₮ шилжүүлгийг шалгаж, BNX эрхийг баталгаажуулах хэсэг
+            Оюутнуудын 100,000₮ шилжүүлгийг шалгаж, BNX эрхийг баталгаажуулах
+            хэсэг
           </p>
         </div>
 
@@ -192,7 +211,7 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
           disabled={loading}
           className="bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition active:scale-95 cursor-pointer self-start md:self-auto border border-neutral-700"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           <span>Шинэчлэх</span>
         </button>
       </div>
@@ -213,95 +232,112 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
 
       {/* Stats Counter Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
-        
         {/* Total Users */}
         <div className="bg-neutral-900 border border-neutral-800 p-4 rounded-2xl space-y-1">
           <div className="flex items-center justify-between text-neutral-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Нийт хэрэглэгч</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
+              Нийт хэрэглэгч
+            </span>
             <Users className="w-4 h-4 text-sky-400" />
           </div>
-          <div className="text-2xl font-black text-white font-mono">{stats.totalUsers}</div>
+          <div className="text-2xl font-black text-white font-mono">
+            {stats.totalUsers}
+          </div>
         </div>
 
         {/* Pending Requests */}
-        <div className="bg-neutral-900 border border-amber-500/30 p-4 rounded-2xl space-y-1 bg-amber-500/5">
+        <div className="border border-amber-500/30 p-4 rounded-2xl space-y-1 bg-amber-500/5">
           <div className="flex items-center justify-between text-amber-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Хүлээгдэж буй</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
+              Хүлээгдэж буй
+            </span>
             <Clock className="w-4 h-4 text-amber-400 animate-pulse" />
           </div>
-          <div className="text-2xl font-black text-amber-400 font-mono">{stats.pendingRequests}</div>
+          <div className="text-2xl font-black text-amber-400 font-mono">
+            {stats.pendingRequests}
+          </div>
         </div>
 
         {/* Approved Requests */}
-        <div className="bg-neutral-900 border border-emerald-500/30 p-4 rounded-2xl space-y-1 bg-emerald-500/5">
+        <div className="border border-emerald-500/30 p-4 rounded-2xl space-y-1 bg-emerald-500/5">
           <div className="flex items-center justify-between text-emerald-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Баталгаажсан</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
+              Баталгаажсан
+            </span>
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="text-2xl font-black text-emerald-400 font-mono">{stats.approvedRequests}</div>
+          <div className="text-2xl font-black text-emerald-400 font-mono">
+            {stats.approvedRequests}
+          </div>
         </div>
 
         {/* Declined Requests */}
-        <div className="bg-neutral-900 border border-rose-500/30 p-4 rounded-2xl space-y-1 bg-rose-500/5">
+        <div className="border border-rose-500/30 p-4 rounded-2xl space-y-1 bg-rose-500/5">
           <div className="flex items-center justify-between text-rose-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Татгалзсан</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
+              Татгалзсан
+            </span>
             <XCircle className="w-4 h-4 text-rose-400" />
           </div>
-          <div className="text-2xl font-black text-rose-400 font-mono">{stats.declinedRequests}</div>
+          <div className="text-2xl font-black text-rose-400 font-mono">
+            {stats.declinedRequests}
+          </div>
         </div>
 
         {/* Active Subscriptions */}
         <div className="bg-neutral-900 border border-neutral-800 p-4 rounded-2xl space-y-1 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between text-neutral-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Идэвхтэй гишүүд</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
+              Идэвхтэй гишүүд
+            </span>
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="text-2xl font-black text-white font-mono">{stats.activeUsers}</div>
+          <div className="text-2xl font-black text-white font-mono">
+            {stats.activeUsers}
+          </div>
         </div>
-
       </div>
 
       {/* Filter and Search Toolbar */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        
         {/* Status Filter Tabs */}
         <div className="flex items-center bg-neutral-950 p-1 rounded-xl border border-neutral-800 overflow-x-auto text-xs">
           <button
-            onClick={() => setStatusFilter('pending')}
+            onClick={() => setStatusFilter("pending")}
             className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
-              statusFilter === 'pending'
-                ? 'bg-amber-400 text-black shadow-md'
-                : 'text-neutral-400 hover:text-white'
+              statusFilter === "pending"
+                ? "bg-amber-400 text-black shadow-md"
+                : "text-neutral-400 hover:text-white"
             }`}
           >
             Хүлээгдэж буй ({stats.pendingRequests})
           </button>
           <button
-            onClick={() => setStatusFilter('approved')}
+            onClick={() => setStatusFilter("approved")}
             className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
-              statusFilter === 'approved'
-                ? 'bg-emerald-500 text-white shadow-md'
-                : 'text-neutral-400 hover:text-white'
+              statusFilter === "approved"
+                ? "bg-emerald-500 text-white shadow-md"
+                : "text-neutral-400 hover:text-white"
             }`}
           >
             Баталгаажсан ({stats.approvedRequests})
           </button>
           <button
-            onClick={() => setStatusFilter('declined')}
+            onClick={() => setStatusFilter("declined")}
             className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
-              statusFilter === 'declined'
-                ? 'bg-rose-500 text-white shadow-md'
-                : 'text-neutral-400 hover:text-white'
+              statusFilter === "declined"
+                ? "bg-rose-500 text-white shadow-md"
+                : "text-neutral-400 hover:text-white"
             }`}
           >
             Татгалзсан ({stats.declinedRequests})
           </button>
           <button
-            onClick={() => setStatusFilter('all')}
+            onClick={() => setStatusFilter("all")}
             className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
-              statusFilter === 'all'
-                ? 'bg-neutral-800 text-white shadow-md'
-                : 'text-neutral-400 hover:text-white'
+              statusFilter === "all"
+                ? "bg-neutral-800 text-white shadow-md"
+                : "text-neutral-400 hover:text-white"
             }`}
           >
             Бүгд ({requests.length})
@@ -309,7 +345,7 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
         </div>
 
         {/* Search Field */}
-        <div className="relative min-w-[240px] md:w-72">
+        <div className="relative min-w-60 md:w-72">
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-neutral-500" />
           <input
             type="text"
@@ -319,12 +355,10 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
             className="w-full bg-neutral-950 border border-neutral-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 placeholder:text-neutral-500"
           />
         </div>
-
       </div>
 
       {/* Payment Requests Table / List */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-xl">
-        
         {loading ? (
           <div className="p-12 text-center text-neutral-400 text-xs font-mono">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400" />
@@ -342,7 +376,6 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
                 key={reqItem.id}
                 className="p-4 md:p-5 hover:bg-neutral-850/50 transition flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
-                
                 {/* Student Info */}
                 <div className="space-y-1.5 max-w-md">
                   <div className="flex items-center gap-2">
@@ -368,7 +401,7 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
                     </span>
                   </div>
 
-                  {reqItem.declineReason && reqItem.status === 'declined' && (
+                  {reqItem.declineReason && reqItem.status === "declined" && (
                     <div className="text-[11px] text-rose-400/90 italic bg-rose-500/10 p-2 rounded-lg border border-rose-500/20 mt-1">
                       Татгалзсан шалтгаан: {reqItem.declineReason}
                     </div>
@@ -377,10 +410,11 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
 
                 {/* Amount & Status Badge & Actions */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
-                  
                   {/* Amount */}
                   <div className="text-right sm:pr-2">
-                    <span className="text-[10px] text-neutral-500 uppercase tracking-wider block font-mono">Төлбөр</span>
+                    <span className="text-[10px] text-neutral-500 uppercase tracking-wider block font-mono">
+                      Төлбөр
+                    </span>
                     <span className="text-base font-black text-amber-400 font-mono">
                       {(reqItem.amount || 100000).toLocaleString()}₮
                     </span>
@@ -388,11 +422,12 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
 
                   {/* Status Badge */}
                   <div>
-                    {reqItem.status === 'pending' ? (
+                    {reqItem.status === "pending" ? (
                       <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono">
-                        <Clock className="w-3 h-3 animate-pulse" /> ХҮЛЭЭГДЭЖ БАЙНА
+                        <Clock className="w-3 h-3 animate-pulse" /> ХҮЛЭЭГДЭЖ
+                        БАЙНА
                       </span>
-                    ) : reqItem.status === 'approved' ? (
+                    ) : reqItem.status === "approved" ? (
                       <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono">
                         <CheckCircle2 className="w-3 h-3" /> ЗӨВШӨӨРСӨН
                       </span>
@@ -404,7 +439,7 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
                   </div>
 
                   {/* Actions for pending status */}
-                  {reqItem.status === 'pending' && (
+                  {reqItem.status === "pending" && (
                     <div className="flex items-center gap-2 pt-2 sm:pt-0">
                       <button
                         onClick={() => handleApprove(reqItem)}
@@ -425,28 +460,28 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
                       </button>
                     </div>
                   )}
-
                 </div>
-
               </div>
             ))}
           </div>
         )}
-
       </div>
 
       {/* Decline Reason Modal */}
       {declineModalOpen && selectedReqForDecline && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
           <div className="bg-neutral-900 border border-neutral-800 rounded-3xl max-w-md w-full p-6 text-white shadow-2xl space-y-4">
-            
             <h3 className="text-lg font-bold text-rose-400 flex items-center gap-2">
               <XCircle className="w-5 h-5" />
               Төлбөр татгалзах
             </h3>
 
             <p className="text-xs text-neutral-300">
-              <strong className="text-white">{selectedReqForDecline.studentName}</strong> ({selectedReqForDecline.transactionReference})-ийн хүсэлтийг цуцлах шалтгааныг бичнэ үү:
+              <strong className="text-white">
+                {selectedReqForDecline.studentName}
+              </strong>{" "}
+              ({selectedReqForDecline.transactionReference})-ийн хүсэлтийг
+              цуцлах шалтгааныг бичнэ үү:
             </p>
 
             <textarea
@@ -472,11 +507,9 @@ export default function BnxAdminPanel({ adminUid, adminEmail }: BnxAdminPanelPro
                 Татгалзах
               </button>
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }

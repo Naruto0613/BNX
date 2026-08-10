@@ -107,7 +107,7 @@ export default function AcademicProfilePDFModal({
   const totalResearch = profile.researchList?.length || 0;
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex flex-col items-center justify-start overflow-y-auto p-4 md:p-8">
+    <div className="fixed inset-0 z-200 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-start overflow-y-auto p-4 md:p-8">
       {/* ACTION HEADER BAR (Hidden during actual print) */}
       <div className="print:hidden w-full max-w-4xl bg-neutral-900 border border-neutral-800 p-4 rounded-2xl mb-6 flex items-center justify-between gap-4 sticky top-2 z-50 shadow-2xl">
         <div className="flex items-center gap-3">

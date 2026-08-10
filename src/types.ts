@@ -223,6 +223,7 @@ export interface University {
   name: string;
   country: string;
   imageUrl?: string;
+  imageSourceUrl?: string;
   ranking?: number;
   acceptanceRate?: string;
   website?: string;

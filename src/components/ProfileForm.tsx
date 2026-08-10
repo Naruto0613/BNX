@@ -803,7 +803,8 @@ export default function ProfileForm({
       const list = prev.documentsList || [];
       const updated = list.map((doc) => {
         if (doc.id === docTypeKey || doc.type === docTypeKey) {
-          const nextStatus = doc.status === "Uploaded" ? "Missing" : "Uploaded";
+          const nextStatus: DocumentItem["status"] =
+            doc.status === "Uploaded" ? "Missing" : "Uploaded";
           return {
             ...doc,
             status: nextStatus,
@@ -842,7 +843,7 @@ export default function ProfileForm({
         {/* TOP STATUS BAR & ACTIONS */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-neutral-900/90 border border-neutral-800/80 p-4 sm:p-5 rounded-2xl backdrop-blur-xl sticky top-4 z-40 shadow-2xl">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center font-bold shadow-lg shadow-amber-500/20">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center font-bold shadow-lg shadow-amber-500/20">
               <Sparkles className="w-5 h-5 text-black" />
             </div>
             <div>
@@ -916,7 +917,7 @@ export default function ProfileForm({
           id="header"
           className="bg-neutral-900/90 border border-neutral-800/80 rounded-2xl p-5 sm:p-7 space-y-6 backdrop-blur-xl relative overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-amber-500/5 via-sky-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-linear-to-br from-amber-500/5 via-sky-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
             {/* User Details */}
