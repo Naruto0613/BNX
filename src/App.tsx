@@ -17,6 +17,8 @@ import {
   Mail,
   Grid,
   AlertCircle,
+  ShieldCheck,
+  CreditCard,
 } from "lucide-react";
 
 // Types
@@ -65,6 +67,10 @@ import ApplicationTracker from "./components/ApplicationTracker";
 import EssayHelper from "./components/EssayHelper";
 import CountryExplorer from "./components/CountryExplorer";
 import BnxLogo from "./components/BnxLogo";
+import StudentSignUpForm from "./components/StudentSignUpForm";
+import PaymentModal from "./components/PaymentModal";
+import MembershipStatusCard from "./components/MembershipStatusCard";
+import BnxAdminPanel from "./components/BnxAdminPanel";
 
 // Helper to recursively remove undefined values from objects before sending to Firestore
 const cleanUndefined = (obj: any): any => {
@@ -105,13 +111,26 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [isForgotPasswordSent, setIsForgotPasswordSent] = useState(false);
 
+  // BNX Payment & Admin Modal States
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+
   // App Navigation & layouts
   const [activeTab, setActiveTab] = useState<
-    "cv" | "unis" | "scholarships" | "tracker" | "essays" | "countries"
+    | "cv"
+    | "unis"
+    | "scholarships"
+    | "tracker"
+    | "essays"
+    | "countries"
+    | "admin"
   >("cv");
   const [loadingApp, setLoadingApp] = useState(true);
   const [savingData, setSavingData] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const isAdminUser =
+    userProfile?.role === "admin" ||
+    currentUser?.email?.toLowerCase() === "naranbadrakh1013@gmail.com";
 
   // Computed lists (Static + Custom db entries)
   const allUniversities = [...initialUniversities, ...customUniversities];
@@ -229,42 +248,26 @@ export default function App() {
       const unsubProfile = onSnapshot(
         profileRef,
         async (docSnap) => {
-          if (docSnap.exists()) {
+          if (docSnap.exists() && docSnap.data().transactionReference) {
             setUserProfile(docSnap.data() as UserProfile);
             setLoadingApp(false);
           } else {
-            // If profile doesn't exist yet, build and write the default
-            const defaultProfile: UserProfile = {
-              uid: currentUser.uid,
-              name: currentUser.email
-                ? currentUser.email.split("@")[0]
-                : "Монгол Оюутан",
-              phone: "",
-              email: currentUser.email || "",
-              address: "Монгол Улс, Улаанбаатар хот",
-              bioSummary: "",
-              workExperience: "",
-              age: undefined,
-              country: "Монгол Улс",
-              school: "",
-              gpa: undefined,
-              classRank: "",
-              ieltsScore: undefined,
-              satScore: undefined,
-              careerInterests: "Мэдээллийн Технологи",
-              awards: "",
-              olympiads: "",
-              volunteerActivities: "",
-              leadershipExperience: "",
-              programmingSkills: "",
-              languageSkills: "Монгол хэл (Эх хэл)",
-            };
+            // Call server API to assign atomic transaction reference
             try {
-              await setDoc(profileRef, cleanUndefined(defaultProfile));
-            } catch (writeErr) {
-              console.error("Failed to auto-create profile:", writeErr);
+              await fetch("/api/students/assign-reference", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  uid: currentUser.uid,
+                  email: currentUser.email || "",
+                }),
+              });
+            } catch (refErr) {
+              console.error(
+                "Failed to assign reference via server API:",
+                refErr,
+              );
             }
-            setUserProfile(defaultProfile);
             setLoadingApp(false);
           }
         },
@@ -765,72 +768,79 @@ export default function App() {
                   </div>
                 )}
 
-                <form onSubmit={handleAuthSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-neutral-600 uppercase tracking-wider mb-1.5">
-                      И-мэйл хаяг
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400" />
-                      <input
-                        id="auth-input-email"
-                        type="email"
-                        required
-                        value={authEmail}
-                        onChange={(e) => setAuthEmail(e.target.value)}
-                        placeholder="Ж: anand@study.mn"
-                        className="w-full bg-white border border-neutral-200 rounded-xl pl-10 pr-4 py-2.5 text-xs text-black focus:outline-none focus:border-black placeholder:text-neutral-300"
-                      />
-                    </div>
-                  </div>
-
-                  {authMode !== "forgot" && (
+                {authMode === "signup" ? (
+                  <StudentSignUpForm
+                    onSignUpSuccess={(userData) => {
+                      setIsPaymentModalOpen(true);
+                    }}
+                    onSwitchToLogin={() => setAuthMode("login")}
+                  />
+                ) : (
+                  <form onSubmit={handleAuthSubmit} className="space-y-4">
                     <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-[10px] font-bold text-neutral-600 uppercase tracking-wider">
-                          Нууц үг
-                        </label>
-                        {authMode === "login" && (
-                          <button
-                            type="button"
-                            id="btn-switch-forgot"
-                            onClick={() => setAuthMode("forgot")}
-                            className="text-[9px] text-neutral-400 hover:text-black transition font-semibold"
-                          >
-                            Мартсан уу?
-                          </button>
-                        )}
-                      </div>
+                      <label className="block text-[10px] font-bold text-neutral-600 uppercase tracking-wider mb-1.5">
+                        И-мэйл хаяг
+                      </label>
                       <div className="relative">
-                        <Lock className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400" />
+                        <Mail className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400" />
                         <input
-                          id="auth-input-password"
-                          type="password"
+                          id="auth-input-email"
+                          type="email"
                           required
-                          value={authPassword}
-                          onChange={(e) => setAuthPassword(e.target.value)}
-                          placeholder="••••••••"
+                          value={authEmail}
+                          onChange={(e) => setAuthEmail(e.target.value)}
+                          placeholder="Ж: anand@study.mn"
                           className="w-full bg-white border border-neutral-200 rounded-xl pl-10 pr-4 py-2.5 text-xs text-black focus:outline-none focus:border-black placeholder:text-neutral-300"
                         />
                       </div>
                     </div>
-                  )}
 
-                  <button
-                    id="btn-auth-submit"
-                    type="submit"
-                    disabled={authLoading}
-                    className="w-full bg-black hover:bg-neutral-800 text-white py-3 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-150 active:scale-95 disabled:opacity-50 mt-2 flex items-center justify-center cursor-pointer"
-                  >
-                    {authLoading
-                      ? "Холбогдож байна..."
-                      : authMode === "login"
-                        ? "НЭВТРЭХ"
-                        : authMode === "signup"
-                          ? "БҮРТГҮҮЛЭХ"
+                    {authMode !== "forgot" && (
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="block text-[10px] font-bold text-neutral-600 uppercase tracking-wider">
+                            Нууц үг
+                          </label>
+                          {authMode === "login" && (
+                            <button
+                              type="button"
+                              id="btn-switch-forgot"
+                              onClick={() => setAuthMode("forgot")}
+                              className="text-[9px] text-neutral-400 hover:text-black transition font-semibold"
+                            >
+                              Мартсан уу?
+                            </button>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Lock className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400" />
+                          <input
+                            id="auth-input-password"
+                            type="password"
+                            required
+                            value={authPassword}
+                            onChange={(e) => setAuthPassword(e.target.value)}
+                            placeholder="••••••••"
+                            className="w-full bg-white border border-neutral-200 rounded-xl pl-10 pr-4 py-2.5 text-xs text-black focus:outline-none focus:border-black placeholder:text-neutral-300"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      id="btn-auth-submit"
+                      type="submit"
+                      disabled={authLoading}
+                      className="w-full bg-black hover:bg-neutral-800 text-white py-3 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-150 active:scale-95 disabled:opacity-50 mt-2 flex items-center justify-center cursor-pointer font-mono"
+                    >
+                      {authLoading
+                        ? "Холбогдож байна..."
+                        : authMode === "login"
+                          ? "НЭВТРЭХ"
                           : "ИЛГЭЭХ"}
-                  </button>
-                </form>
+                    </button>
+                  </form>
+                )}
 
                 <div className="mt-4 pt-4 border-t border-neutral-100 text-center space-y-3">
                   <span className="text-[9px] text-neutral-400 uppercase tracking-wider font-bold">
@@ -867,102 +877,363 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#050507] text-[#eeeef2] flex flex-col md:flex-row font-sans selection:bg-white/10 antialiased">
       {/* MOBILE HEADER RESPONSIVE VIEWS */}
-      <div className="md:hidden bg-[#09090b]/95 border-b border-white/5 backdrop-blur-md px-5 py-4.5 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <BnxLogo className="h-4.5" />
-          <span className="font-extrabold text-white tracking-widest text-xs font-mono">
-            НАВИГАТОР
-          </span>
+      <div className="md:hidden bg-[#09090b]/95 border-b border-white/10 backdrop-blur-xl px-4 py-3 flex items-center justify-between sticky top-0 z-[100] shadow-xl">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <BnxLogo className="h-5 shrink-0" />
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="font-extrabold text-white tracking-widest text-xs font-mono shrink-0">
+              НАВИГАТОР
+            </span>
+            <span className="text-[10px] text-amber-300 font-bold bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full truncate">
+              {activeTab === "cv"
+                ? "Профайл"
+                : activeTab === "unis"
+                  ? "Сургуулиуд"
+                  : activeTab === "scholarships"
+                    ? "Тэтгэлэг"
+                    : activeTab === "tracker"
+                      ? "Хөтөч"
+                      : activeTab === "essays"
+                        ? "AI Эссэ"
+                        : "Улсууд"}
+            </span>
+          </div>
         </div>
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="text-neutral-400 hover:text-white p-1 rounded focus:outline-none"
+          className="text-neutral-300 hover:text-white px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 active:scale-95 transition-all focus:outline-none flex items-center gap-1.5 shrink-0 shadow-sm"
         >
+          <span className="text-[11px] font-bold text-neutral-200">
+            {mobileMenuOpen ? "Хаах" : "Цэс"}
+          </span>
           {mobileMenuOpen ? (
-            <X className="w-6 h-6" />
+            <X className="w-4 h-4 text-amber-400" />
           ) : (
-            <Menu className="w-6 h-6" />
+            <Menu className="w-4 h-4 text-white" />
           )}
         </button>
       </div>
 
-      {/* MOBILE DROPDOWN SELECTION DRAWER */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0c0c0e] border-b border-white/5 p-5 space-y-3.5 absolute top-[60px] left-0 right-0 z-40 animate-slide-down shadow-2xl">
-          <ul className="space-y-2">
-            <li>
-              <button
-                onClick={() => {
-                  setActiveTab("cv");
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 ${activeTab === "cv" ? "bg-white text-black font-extrabold" : "text-neutral-400 hover:bg-white/5 hover:text-white"}`}
-              >
-                <UserIcon className="w-4 h-4" /> Академик Профайл
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  setActiveTab("unis");
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 ${activeTab === "unis" ? "bg-white text-black font-extrabold" : "text-neutral-400 hover:bg-white/5 hover:text-white"}`}
-              >
-                <GraduationCap className="w-4 h-4" /> Их Сургуулиудын Сан
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  setActiveTab("scholarships");
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 ${activeTab === "scholarships" ? "bg-white text-black font-extrabold" : "text-neutral-400 hover:bg-white/5 hover:text-white"}`}
-              >
-                <BookOpen className="w-4 h-4" /> Тэтгэлгийн Радар
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  setActiveTab("tracker");
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 ${activeTab === "tracker" ? "bg-white text-black font-extrabold" : "text-neutral-400 hover:bg-white/5 hover:text-white"}`}
-              >
-                <Briefcase className="w-4 h-4" /> Аппликейшн Хөтөч
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  setActiveTab("essays");
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 ${activeTab === "essays" ? "bg-white text-black font-extrabold" : "text-neutral-400 hover:bg-white/5 hover:text-white"}`}
-              >
-                <FileText className="w-4 h-4" /> AI Эссэ Туслах
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  setActiveTab("countries");
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 ${activeTab === "countries" ? "bg-white text-black font-extrabold" : "text-neutral-400 hover:bg-white/5 hover:text-white"}`}
-              >
-                <Home className="w-4 h-4" /> Суралцах Улсууд
-              </button>
-            </li>
-          </ul>
+      {/* MOBILE HORIZONTAL QUICK TAB SCROLL BAR */}
+      <div className="md:hidden bg-[#0a0a0d]/95 border-b border-white/5 px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar z-[90] sticky top-[49px]">
+        <button
+          onClick={() => {
+            setActiveTab("cv");
+            setMobileMenuOpen(false);
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+            activeTab === "cv"
+              ? "bg-white text-black shadow-md"
+              : "bg-neutral-900/80 text-neutral-400 hover:text-white border border-white/5"
+          }`}
+        >
+          <UserIcon className="w-3.5 h-3.5" />
+          <span>Профайл</span>
+        </button>
 
-          <div className="pt-3.5 border-t border-white/5 flex items-center justify-between text-xs text-neutral-400">
-            <span>{currentUser.email}</span>
+        <button
+          onClick={() => {
+            setActiveTab("unis");
+            setMobileMenuOpen(false);
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+            activeTab === "unis"
+              ? "bg-white text-black shadow-md"
+              : "bg-neutral-900/80 text-neutral-400 hover:text-white border border-white/5"
+          }`}
+        >
+          <GraduationCap className="w-3.5 h-3.5" />
+          <span>Сургуулиуд</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("scholarships");
+            setMobileMenuOpen(false);
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+            activeTab === "scholarships"
+              ? "bg-white text-black shadow-md"
+              : "bg-neutral-900/80 text-neutral-400 hover:text-white border border-white/5"
+          }`}
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>Тэтгэлэг</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("tracker");
+            setMobileMenuOpen(false);
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+            activeTab === "tracker"
+              ? "bg-white text-black shadow-md"
+              : "bg-neutral-900/80 text-neutral-400 hover:text-white border border-white/5"
+          }`}
+        >
+          <Briefcase className="w-3.5 h-3.5" />
+          <span>Хөтөч</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("essays");
+            setMobileMenuOpen(false);
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+            activeTab === "essays"
+              ? "bg-white text-black shadow-md"
+              : "bg-neutral-900/80 text-neutral-400 hover:text-white border border-white/5"
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          <span>AI Эссэ</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("countries");
+            setMobileMenuOpen(false);
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+            activeTab === "countries"
+              ? "bg-white text-black shadow-md"
+              : "bg-neutral-900/80 text-neutral-400 hover:text-white border border-white/5"
+          }`}
+        >
+          <Home className="w-3.5 h-3.5" />
+          <span>Улсууд</span>
+        </button>
+
+        {isAdminUser && (
+          <button
+            onClick={() => {
+              setActiveTab("admin");
+              setMobileMenuOpen(false);
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+              activeTab === "admin"
+                ? "bg-amber-400 text-black shadow-md font-extrabold"
+                : "bg-amber-400/10 text-amber-400 hover:text-white border border-amber-400/20"
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+            <span>Админ Панел</span>
+          </button>
+        )}
+      </div>
+
+      {/* MOBILE DROPDOWN SELECTION DRAWER OVERLAY */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-x-0 top-[49px] bottom-0 z-[120] bg-[#09090b]/98 backdrop-blur-2xl p-5 overflow-y-auto flex flex-col justify-between shadow-2xl animate-fade-in border-t border-white/10">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest font-mono">
+                Үндсэн Навигаци
+              </span>
+              <span className="text-[10px] text-amber-400 font-mono font-bold">
+                Монгол Платформ
+              </span>
+            </div>
+
+            <ul className="space-y-2">
+              <li>
+                <button
+                  onClick={() => {
+                    setActiveTab("cv");
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                    activeTab === "cv"
+                      ? "bg-white text-black shadow-lg font-black"
+                      : "text-neutral-300 hover:bg-white/5 hover:text-white bg-neutral-900/50 border border-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <UserIcon
+                      className={`w-4 h-4 ${activeTab === "cv" ? "text-black" : "text-neutral-400"}`}
+                    />
+                    <span>Академик Профайл (CV)</span>
+                  </div>
+                  {activeTab === "cv" && (
+                    <span className="text-[10px] uppercase bg-black text-white px-2 py-0.5 rounded font-mono font-bold">
+                      Идэвхтэй
+                    </span>
+                  )}
+                </button>
+              </li>
+
+              <li>
+                <button
+                  onClick={() => {
+                    setActiveTab("unis");
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                    activeTab === "unis"
+                      ? "bg-white text-black shadow-lg font-black"
+                      : "text-neutral-300 hover:bg-white/5 hover:text-white bg-neutral-900/50 border border-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <GraduationCap
+                      className={`w-4 h-4 ${activeTab === "unis" ? "text-black" : "text-neutral-400"}`}
+                    />
+                    <span>Их Сургуулиудын Сан</span>
+                  </div>
+                  {activeTab === "unis" && (
+                    <span className="text-[10px] uppercase bg-black text-white px-2 py-0.5 rounded font-mono font-bold">
+                      Идэвхтэй
+                    </span>
+                  )}
+                </button>
+              </li>
+
+              <li>
+                <button
+                  onClick={() => {
+                    setActiveTab("scholarships");
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                    activeTab === "scholarships"
+                      ? "bg-white text-black shadow-lg font-black"
+                      : "text-neutral-300 hover:bg-white/5 hover:text-white bg-neutral-900/50 border border-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <BookOpen
+                      className={`w-4 h-4 ${activeTab === "scholarships" ? "text-black" : "text-neutral-400"}`}
+                    />
+                    <span>Тэтгэлгийн Радар</span>
+                  </div>
+                  {activeTab === "scholarships" && (
+                    <span className="text-[10px] uppercase bg-black text-white px-2 py-0.5 rounded font-mono font-bold">
+                      Идэвхтэй
+                    </span>
+                  )}
+                </button>
+              </li>
+
+              <li>
+                <button
+                  onClick={() => {
+                    setActiveTab("tracker");
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                    activeTab === "tracker"
+                      ? "bg-white text-black shadow-lg font-black"
+                      : "text-neutral-300 hover:bg-white/5 hover:text-white bg-neutral-900/50 border border-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Briefcase
+                      className={`w-4 h-4 ${activeTab === "tracker" ? "text-black" : "text-neutral-400"}`}
+                    />
+                    <span>Аппликейшн Хөтөч</span>
+                  </div>
+                  {activeTab === "tracker" && (
+                    <span className="text-[10px] uppercase bg-black text-white px-2 py-0.5 rounded font-mono font-bold">
+                      Идэвхтэй
+                    </span>
+                  )}
+                </button>
+              </li>
+
+              <li>
+                <button
+                  onClick={() => {
+                    setActiveTab("essays");
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                    activeTab === "essays"
+                      ? "bg-white text-black shadow-lg font-black"
+                      : "text-neutral-300 hover:bg-white/5 hover:text-white bg-neutral-900/50 border border-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <FileText
+                      className={`w-4 h-4 ${activeTab === "essays" ? "text-black" : "text-neutral-400"}`}
+                    />
+                    <span>AI Эссэ Туслах</span>
+                  </div>
+                  {activeTab === "essays" && (
+                    <span className="text-[10px] uppercase bg-black text-white px-2 py-0.5 rounded font-mono font-bold">
+                      Идэвхтэй
+                    </span>
+                  )}
+                </button>
+              </li>
+
+              <li>
+                <button
+                  onClick={() => {
+                    setActiveTab("countries");
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                    activeTab === "countries"
+                      ? "bg-white text-black shadow-lg font-black"
+                      : "text-neutral-300 hover:bg-white/5 hover:text-white bg-neutral-900/50 border border-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Home
+                      className={`w-4 h-4 ${activeTab === "countries" ? "text-black" : "text-neutral-400"}`}
+                    />
+                    <span>Суралцах Улсууд</span>
+                  </div>
+                  {activeTab === "countries" && (
+                    <span className="text-[10px] uppercase bg-black text-white px-2 py-0.5 rounded font-mono font-bold">
+                      Идэвхтэй
+                    </span>
+                  )}
+                </button>
+              </li>
+
+              {isAdminUser && (
+                <li>
+                  <button
+                    onClick={() => {
+                      setActiveTab("admin");
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                      activeTab === "admin"
+                        ? "bg-amber-400 text-black shadow-lg font-black"
+                        : "text-amber-400 hover:bg-white/5 hover:text-white bg-amber-500/10 border border-amber-500/20"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                      <span>BNX Админ Панел</span>
+                    </div>
+                    {activeTab === "admin" && (
+                      <span className="text-[10px] uppercase bg-black text-amber-400 px-2 py-0.5 rounded font-mono font-bold">
+                        Идэвхтэй
+                      </span>
+                    )}
+                  </button>
+                </li>
+              )}
+            </ul>
+          </div>
+
+          <div className="pt-4 mt-6 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
+            <div className="min-w-0 pr-2">
+              <span className="text-[9px] text-neutral-500 font-mono block uppercase">
+                Нэвтэрсэн Хэрэглэгч
+              </span>
+              <span className="truncate font-mono font-bold text-white block text-xs">
+                {currentUser.email}
+              </span>
+            </div>
             <button
               onClick={handleSignOut}
-              className="px-2.5 py-1.5 rounded-lg border border-white/10 text-rose-400 hover:bg-white/5 text-[10px] uppercase font-bold flex items-center gap-1 focus:outline-none"
+              className="px-3.5 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 text-xs uppercase font-bold flex items-center gap-1.5 shrink-0 focus:outline-none transition-all active:scale-95 shadow-sm"
             >
               <LogOut className="w-3.5 h-3.5" /> Гарах
             </button>
@@ -1077,6 +1348,23 @@ export default function App() {
                 <span>Суралцах Улсууд</span>
               </button>
             </li>
+
+            {isAdminUser && (
+              <li>
+                <button
+                  id="sidebar-nav-admin"
+                  onClick={() => setActiveTab("admin")}
+                  className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center gap-3 transition-colors cursor-pointer ${
+                    activeTab === "admin"
+                      ? "bg-amber-400 text-black font-extrabold shadow-lg"
+                      : "text-amber-400 hover:bg-amber-400/10"
+                  }`}
+                >
+                  <ShieldCheck className="w-4 h-4 shrink-0 text-amber-400" />
+                  <span>BNX Админ Панел</span>
+                </button>
+              </li>
+            )}
           </ul>
         </div>
 
@@ -1089,6 +1377,11 @@ export default function App() {
             <span className="text-white font-semibold block truncate leading-none">
               {currentUser.email}
             </span>
+            {userProfile?.transactionReference && (
+              <span className="text-[10px] font-mono text-amber-400 font-bold block pt-0.5">
+                Код: {userProfile.transactionReference}
+              </span>
+            )}
             {userProfile && (
               <div className="flex items-center justify-between text-[10px] text-neutral-400 pt-1.5 border-t border-white/5">
                 <span>CV Бөглөлт:</span>
@@ -1110,7 +1403,43 @@ export default function App() {
       </nav>
 
       {/* PRIMARY VIEWS CONTENT WORKSPACE */}
-      <main className="flex-1 p-6 md:p-10 lg:p-12 max-w-7xl mx-auto w-full overflow-y-auto">
+      <main className="flex-1 p-3.5 sm:p-6 md:p-10 lg:p-12 max-w-7xl mx-auto w-full overflow-y-auto space-y-6">
+        {/* Payment Submission Modal */}
+        {isPaymentModalOpen && currentUser && (
+          <PaymentModal
+            isOpen={isPaymentModalOpen}
+            onClose={() => setIsPaymentModalOpen(false)}
+            uid={currentUser.uid}
+            email={currentUser.email || ""}
+            studentName={
+              userProfile?.name || currentUser.email?.split("@")[0] || ""
+            }
+            transactionReference={
+              userProfile?.transactionReference || "student_00"
+            }
+            paymentStatus={userProfile?.paymentStatus || "unpaid"}
+            onPaymentSubmitted={() => {
+              setIsPaymentModalOpen(false);
+            }}
+          />
+        )}
+
+        {/* Membership Status Bar for Students */}
+        {userProfile && activeTab !== "admin" && (
+          <MembershipStatusCard
+            userProfile={userProfile}
+            onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+          />
+        )}
+
+        {/* BNX Admin Panel Tab */}
+        {activeTab === "admin" && isAdminUser && currentUser && (
+          <BnxAdminPanel
+            adminUid={currentUser.uid}
+            adminEmail={currentUser.email || ""}
+          />
+        )}
+
         {/* Academic Profile & CV Tab */}
         {activeTab === "cv" && userProfile && (
           <div className="space-y-6">

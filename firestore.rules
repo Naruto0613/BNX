@@ -2,9 +2,20 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // Helper Functions
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'naranbadrakh1013@gmail.com') ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
     }
 
     // Default deny
@@ -12,28 +23,51 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Profiles
+    // User Profiles: users can manage their own profile, admins can access all
     match /profiles/{userId} {
-      allow read, write: if isSignedIn() && userId == request.auth.uid;
+      allow read, write: if isOwner(userId) || isAdmin();
     }
 
-    // Tracks / Applications
+    // Payment Requests: users can submit and view their own, admins can inspect and update all
+    match /paymentRequests/{requestId} {
+      allow create: if isSignedIn();
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
+    }
+
+    // Admins registry
+    match /admins/{adminId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Counters (for sequential transaction reference generation)
+    match /counters/{counterId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Application Tracks: restricted to owner
     match /tracks/{trackId} {
-      allow read, write: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid) && (request.resource == null || request.resource.data.userId == request.auth.uid);
+      allow read, write: if isSignedIn() && (
+        (resource == null || resource.data.userId == request.auth.uid) &&
+        (request.resource == null || request.resource.data.userId == request.auth.uid)
+      );
     }
 
-    // Essays
+    // Essays: restricted to owner
     match /essays/{essayId} {
-      allow read, write: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid) && (request.resource == null || request.resource.data.userId == request.auth.uid);
+      allow read, write: if isSignedIn() && (
+        (resource == null || resource.data.userId == request.auth.uid) &&
+        (request.resource == null || request.resource.data.userId == request.auth.uid)
+      );
     }
 
-    // Custom Universities
+    // Custom Universities: public read, signed-in write
     match /custom_universities/{universityId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Custom Scholarships
+    // Custom Scholarships: public read, signed-in write
     match /custom_scholarships/{scholarshipId} {
       allow read: if true;
       allow write: if isSignedIn();

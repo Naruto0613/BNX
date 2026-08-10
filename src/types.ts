@@ -181,10 +181,41 @@ export interface UserProfile {
   selectedCertificates?: string[];
   languageSkills?: string;
   careerInterests?: string; // e.g. "Engineering", "IT", "Business", "Medicine", "Arts", "Science", "Other"
+  firstName?: string;
+  lastName?: string;
+  role?: "student" | "admin";
+  transactionReference?: string;
+  paymentStatus?: "unpaid" | "pending" | "paid" | "declined";
+  accessStatus?: "active" | "inactive";
+  subscriptionStart?: string;
+  subscriptionEnd?: string;
   documentsList?: DocumentItem[];
   preferences?: UniversityPreferences;
   createdAt?: any;
   updatedAt?: any;
+}
+
+export interface PaymentRequest {
+  id: string;
+  userId: string;
+  studentName: string;
+  email: string;
+  transactionReference: string;
+  amount: number;
+  status: "pending" | "approved" | "declined";
+  submittedAt: string;
+  createdAt?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  declineReason?: string;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  pendingRequests: number;
+  approvedRequests: number;
+  declinedRequests: number;
+  activeUsers: number;
 }
 
 export interface University {
