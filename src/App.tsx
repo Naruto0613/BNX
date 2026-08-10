@@ -248,13 +248,27 @@ export default function App() {
       const unsubProfile = onSnapshot(
         profileRef,
         async (docSnap) => {
-          if (docSnap.exists() && docSnap.data().transactionReference) {
-            setUserProfile(docSnap.data() as UserProfile);
+          if (docSnap.exists()) {
+            const pData = docSnap.data() as UserProfile;
+            setUserProfile(pData);
             setLoadingApp(false);
+
+            if (!pData.transactionReference) {
+              fetch("/api/students/assign-reference", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  uid: currentUser.uid,
+                  email: currentUser.email || "",
+                }),
+              }).catch((refErr) =>
+                console.error("Assign ref background err:", refErr),
+              );
+            }
           } else {
-            // Call server API to assign atomic transaction reference
+            // Document does not exist in Firestore yet. Trigger server creation
             try {
-              await fetch("/api/students/assign-reference", {
+              const res = await fetch("/api/students/assign-reference", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -262,13 +276,18 @@ export default function App() {
                   email: currentUser.email || "",
                 }),
               });
+              const resData = await res.json();
+              if (resData.profile) {
+                setUserProfile(resData.profile as UserProfile);
+              }
             } catch (refErr) {
               console.error(
                 "Failed to assign reference via server API:",
                 refErr,
               );
+            } finally {
+              setLoadingApp(false);
             }
-            setLoadingApp(false);
           }
         },
         (err) => {
@@ -484,9 +503,9 @@ export default function App() {
     return (
       <div className="min-h-screen bg-white flex flex-col justify-between relative overflow-hidden font-sans select-none antialiased">
         {/* Main Content Splitted Grid */}
-        <main className="max-w-360 mx-auto w-full flex-1 grid grid-cols-1 lg:grid-cols-12 relative z-10 items-stretch min-h-screen">
+        <main className="max-w-[1440px] mx-auto w-full flex-1 grid grid-cols-1 lg:grid-cols-12 relative z-10 items-stretch min-h-screen">
           {/* Decorative Left Column based on requested layout with Wave SVG */}
-          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-12 relative overflow-hidden h-full min-h-170 bg-neutral-50/50 border-r border-neutral-200">
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-12 relative overflow-hidden h-full min-h-[680px] bg-neutral-50/50 border-r border-neutral-200">
             {/* SVG Overlapping Waves Graphic */}
             <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-start scale-110 select-none">
               <svg
@@ -877,7 +896,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#050507] text-[#eeeef2] flex flex-col md:flex-row font-sans selection:bg-white/10 antialiased">
       {/* MOBILE HEADER RESPONSIVE VIEWS */}
-      <div className="md:hidden bg-[#09090b]/95 border-b border-white/10 backdrop-blur-xl px-4 py-3 flex items-center justify-between sticky top-0 z-100 shadow-xl">
+      <div className="md:hidden bg-[#09090b]/95 border-b border-white/10 backdrop-blur-xl px-4 py-3 flex items-center justify-between sticky top-0 z-[100] shadow-xl">
         <div className="flex items-center gap-2.5 min-w-0">
           <BnxLogo className="h-5 shrink-0" />
           <div className="flex items-center gap-1.5 min-w-0">
@@ -915,7 +934,7 @@ export default function App() {
       </div>
 
       {/* MOBILE HORIZONTAL QUICK TAB SCROLL BAR */}
-      <div className="md:hidden bg-[#0a0a0d]/95 border-b border-white/5 px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar z-90 sticky top-12.25">
+      <div className="md:hidden bg-[#0a0a0d]/95 border-b border-white/5 px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar z-[90] sticky top-[49px]">
         <button
           onClick={() => {
             setActiveTab("cv");
@@ -1026,7 +1045,7 @@ export default function App() {
 
       {/* MOBILE DROPDOWN SELECTION DRAWER OVERLAY */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-12.25 bottom-0 z-120 bg-[#09090b]/98 backdrop-blur-2xl p-5 overflow-y-auto flex flex-col justify-between shadow-2xl animate-fade-in border-t border-white/10">
+        <div className="md:hidden fixed inset-x-0 top-[49px] bottom-0 z-[120] bg-[#09090b]/98 backdrop-blur-2xl p-5 overflow-y-auto flex flex-col justify-between shadow-2xl animate-fade-in border-t border-white/10">
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest font-mono">

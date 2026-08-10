@@ -422,9 +422,11 @@ app.post("/api/students/assign-reference", async (req, res) => {
     let transactionReference = "";
     const isAdminUser = email.toLowerCase() === "naranbadrakh1013@gmail.com";
 
+    let profileDataResult: any = null;
+
     if (existingSnap.exists() && existingSnap.data().transactionReference) {
       transactionReference = existingSnap.data().transactionReference;
-      await updateDoc(profileRef, {
+      const updatedData: any = {
         firstName: firstName || existingSnap.data().firstName || "",
         lastName: lastName || existingSnap.data().lastName || "",
         name:
@@ -433,7 +435,13 @@ app.post("/api/students/assign-reference", async (req, res) => {
           "Оюутан",
         role: isAdminUser ? "admin" : existingSnap.data().role || "student",
         updatedAt: new Date().toISOString(),
-      });
+      };
+      await updateDoc(profileRef, updatedData);
+      profileDataResult = {
+        ...existingSnap.data(),
+        ...updatedData,
+        transactionReference,
+      };
     } else {
       // Atomic counter transaction for sequential unique transaction reference (student_00, student_01, student_02...)
       const counterRef = doc(dbServer, "counters", "student_reference");
@@ -474,6 +482,7 @@ app.post("/api/students/assign-reference", async (req, res) => {
       };
 
       await setDoc(profileRef, newProfileData, { merge: true });
+      profileDataResult = newProfileData;
 
       if (isAdminUser) {
         await setDoc(
@@ -492,6 +501,7 @@ app.post("/api/students/assign-reference", async (req, res) => {
     res.json({
       success: true,
       transactionReference,
+      profile: profileDataResult,
       role: isAdminUser ? "admin" : "student",
     });
   } catch (error: any) {
