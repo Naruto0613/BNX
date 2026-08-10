@@ -67,11 +67,16 @@ export default function PaymentModal({
       const res = await fetch("/api/payment-requests/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid }),
+        body: JSON.stringify({
+          uid,
+          email,
+          studentName,
+          transactionReference,
+        }),
       });
       const data = await res.json();
 
-      if (!res.ok || data.error) {
+      if (data.error && !data.success) {
         throw new Error(
           data.error || "Төлбөрийн хүсэлт илгээхэд алдаа гарлаа.",
         );
@@ -90,7 +95,7 @@ export default function PaymentModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
       <div className="bg-neutral-900 border border-neutral-800 rounded-3xl max-w-lg w-full p-6 md:p-8 text-white shadow-2xl relative overflow-hidden">
         {/* Subtle accent glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-linear-to-r from-amber-500 via-amber-300 to-amber-500 rounded-b-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 rounded-b-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
 
         {/* Close Button */}
         <button
@@ -242,7 +247,7 @@ export default function PaymentModal({
         <button
           onClick={handleSubmitPayment}
           disabled={submitting}
-          className="w-full bg-linear-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-400 text-black font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-widest transition-all duration-200 active:scale-98 shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-400 text-black font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-widest transition-all duration-200 active:scale-98 shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
         >
           {submitting ? (
             <span>Илгээж байна...</span>

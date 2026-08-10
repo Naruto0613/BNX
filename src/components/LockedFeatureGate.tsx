@@ -1,5 +1,21 @@
 import React, { useState } from "react";
-import { Lock, ShieldCheck, Clock, AlertTriangle, CreditCard, Copy, Check, RefreshCw, ChevronRight, Sparkles, GraduationCap, BookOpen, Briefcase, FileText, Globe } from "lucide-react";
+import {
+  Lock,
+  ShieldCheck,
+  Clock,
+  AlertTriangle,
+  CreditCard,
+  Copy,
+  Check,
+  RefreshCw,
+  ChevronRight,
+  Sparkles,
+  GraduationCap,
+  BookOpen,
+  Briefcase,
+  FileText,
+  Globe,
+} from "lucide-react";
 import { UserProfile } from "../types";
 import BnxLogo from "./BnxLogo";
 
@@ -16,14 +32,15 @@ export default function LockedFeatureGate({
   featureTitle,
   featureDescription,
   onOpenPaymentModal,
-  onRefreshProfile
+  onRefreshProfile,
 }: LockedFeatureGateProps) {
   const [copiedAccount, setCopiedAccount] = useState(false);
   const [copiedRef, setCopiedRef] = useState(false);
 
-  const paymentStatus = userProfile?.paymentStatus || 'unpaid';
-  const accessStatus = userProfile?.accessStatus || 'inactive';
-  const transactionReference = userProfile?.transactionReference || 'student_01';
+  const paymentStatus = userProfile?.paymentStatus || "unpaid";
+  const accessStatus = userProfile?.accessStatus || "inactive";
+  const transactionReference =
+    userProfile?.transactionReference || "student_01";
 
   const BANK_ACCOUNT = "MN300005005222111351";
   const BANK_NAME = "Хаан Банк (Khan Bank)";
@@ -44,10 +61,8 @@ export default function LockedFeatureGate({
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 animate-fade-in font-sans">
-      
       {/* Primary Locked Hero Container */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 md:p-10 text-white shadow-2xl relative overflow-hidden">
-        
         {/* Glow Accent Header */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)]" />
 
@@ -68,12 +83,12 @@ export default function LockedFeatureGate({
           </div>
 
           {/* Status Pill */}
-          {paymentStatus === 'pending' ? (
+          {paymentStatus === "pending" ? (
             <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1 rounded-full text-xs font-bold uppercase font-mono animate-pulse">
               <Clock className="w-3.5 h-3.5" />
               <span>Шалгагдаж байна</span>
             </div>
-          ) : paymentStatus === 'declined' ? (
+          ) : paymentStatus === "declined" ? (
             <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/30 text-rose-400 px-3 py-1 rounded-full text-xs font-bold uppercase font-mono">
               <AlertTriangle className="w-3.5 h-3.5" />
               <span>Баталгаажаагүй</span>
@@ -101,20 +116,27 @@ export default function LockedFeatureGate({
           </p>
 
           <p className="text-xs text-amber-300 font-semibold bg-amber-400/10 border border-amber-400/20 p-3 rounded-xl inline-block mt-2">
-            ⚠️ Таны бүртгэл төлбөр төлөөгүй тул энэ хэсгийг ашиглах боломжгүй байна. 100,000₮ төлбөрөө баталгаажуулж BNX системийн бүх боломжийг нээнэ үү.
+            ⚠️ Таны бүртгэл төлбөр төлөөгүй тул энэ хэсгийг ашиглах боломжгүй
+            байна. 100,000₮ төлбөрөө баталгаажуулж BNX системийн бүх боломжийг
+            нээнэ үү.
           </p>
         </div>
 
         {/* Status Conditional Blocks */}
-        {paymentStatus === 'pending' ? (
+        {paymentStatus === "pending" ? (
           <div className="bg-neutral-950 border border-amber-500/30 rounded-2xl p-6 text-center space-y-4 mb-8">
             <div className="flex items-center justify-center gap-2 text-amber-400 font-bold text-sm">
               <Clock className="w-5 h-5 animate-spin" />
               <span>Таны төлбөрийн хүсэлтийг админ шалгаж байна</span>
             </div>
             <p className="text-xs text-neutral-400 leading-relaxed max-w-lg mx-auto">
-              Таны гүйлгээний утга: <strong className="text-amber-300 font-mono text-sm">{transactionReference}</strong>.<br />
-              Шилжүүлгийг Хаан Банкны баримтаар шалгаж баталгаажуулмагц таны BNX эрх автоматаар нээгдэнэ.
+              Таны гүйлгээний утга:{" "}
+              <strong className="text-amber-300 font-mono text-sm">
+                {transactionReference}
+              </strong>
+              .<br />
+              Шилжүүлгийг Хаан Банкны баримтаар шалгаж баталгаажуулмагц таны BNX
+              эрх автоматаар нээгдэнэ.
             </p>
             {onRefreshProfile && (
               <button
@@ -149,18 +171,28 @@ export default function LockedFeatureGate({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <div className="bg-neutral-900 border border-neutral-800 p-3.5 rounded-xl space-y-1">
-                <span className="text-[10px] text-neutral-500 font-mono uppercase block">Банк & Дансны дугаар</span>
+                <span className="text-[10px] text-neutral-500 font-mono uppercase block">
+                  Банк & Дансны дугаар
+                </span>
                 <div className="flex items-center justify-between pt-0.5">
-                  <span className="font-mono font-bold text-white text-sm">{BANK_ACCOUNT}</span>
+                  <span className="font-mono font-bold text-white text-sm">
+                    {BANK_ACCOUNT}
+                  </span>
                   <button
                     onClick={handleCopyAccount}
                     className="text-neutral-400 hover:text-amber-400 text-[10px] font-mono flex items-center gap-1 focus:outline-none"
                   >
-                    {copiedAccount ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedAccount ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
                     <span>{copiedAccount ? "Хуулагдлаа" : "Хуулах"}</span>
                   </button>
                 </div>
-                <span className="text-[10px] text-neutral-400 block">{BANK_NAME} • Хүлээн авагч: {ACCOUNT_HOLDER}</span>
+                <span className="text-[10px] text-neutral-400 block">
+                  {BANK_NAME} • Хүлээн авагч: {ACCOUNT_HOLDER}
+                </span>
               </div>
 
               <div className="bg-neutral-900 border border-amber-500/30 p-3.5 rounded-xl space-y-1">
@@ -168,16 +200,24 @@ export default function LockedFeatureGate({
                   Гүйлгээний Утга (Заавал бичнэ!)
                 </span>
                 <div className="flex items-center justify-between pt-0.5">
-                  <span className="font-mono font-black text-amber-300 text-base">{transactionReference}</span>
+                  <span className="font-mono font-black text-amber-300 text-base">
+                    {transactionReference}
+                  </span>
                   <button
                     onClick={handleCopyRef}
                     className="text-amber-400 hover:text-amber-300 text-[10px] font-mono flex items-center gap-1 focus:outline-none"
                   >
-                    {copiedRef ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedRef ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
                     <span>{copiedRef ? "Хуулагдлаа" : "Код хуулах"}</span>
                   </button>
                 </div>
-                <span className="text-[10px] text-neutral-400 block">Энэ кодоор таны төлбөр тулгагдаж идэвхжинэ</span>
+                <span className="text-[10px] text-neutral-400 block">
+                  Энэ кодоор таны төлбөр тулгагдаж идэвхжинэ
+                </span>
               </div>
             </div>
           </div>
@@ -195,8 +235,12 @@ export default function LockedFeatureGate({
                 <GraduationCap className="w-4 h-4" />
               </div>
               <div className="space-y-0.5">
-                <span className="text-xs font-bold text-white block">Их Сургуулийн Шалгуур</span>
-                <p className="text-[10px] text-neutral-400 leading-relaxed">100+ топ сургуулийн элсэлтийн босго, төлбөр, шаардлага</p>
+                <span className="text-xs font-bold text-white block">
+                  Их Сургуулийн Шалгуур
+                </span>
+                <p className="text-[10px] text-neutral-400 leading-relaxed">
+                  100+ топ сургуулийн элсэлтийн босго, төлбөр, шаардлага
+                </p>
               </div>
             </div>
 
@@ -205,8 +249,12 @@ export default function LockedFeatureGate({
                 <Sparkles className="w-4 h-4" />
               </div>
               <div className="space-y-0.5">
-                <span className="text-xs font-bold text-white block">Gemini AI Магадлал</span>
-                <p className="text-[10px] text-neutral-400 leading-relaxed">Тэнцэх & тэтгэлэг авах хувийн магадлалын тооцоолол</p>
+                <span className="text-xs font-bold text-white block">
+                  Gemini AI Магадлал
+                </span>
+                <p className="text-[10px] text-neutral-400 leading-relaxed">
+                  Тэнцэх & тэтгэлэг авах хувийн магадлалын тооцоолол
+                </p>
               </div>
             </div>
 
@@ -215,8 +263,12 @@ export default function LockedFeatureGate({
                 <BookOpen className="w-4 h-4" />
               </div>
               <div className="space-y-0.5">
-                <span className="text-xs font-bold text-white block">Тэтгэлгүүдийн Сан</span>
-                <p className="text-[10px] text-neutral-400 leading-relaxed">100% бүтэн ба бага зардлаар суралцах тэтгэлгүүд</p>
+                <span className="text-xs font-bold text-white block">
+                  Тэтгэлгүүдийн Сан
+                </span>
+                <p className="text-[10px] text-neutral-400 leading-relaxed">
+                  100% бүтэн ба бага зардлаар суралцах тэтгэлгүүд
+                </p>
               </div>
             </div>
 
@@ -225,8 +277,12 @@ export default function LockedFeatureGate({
                 <Briefcase className="w-4 h-4" />
               </div>
               <div className="space-y-0.5">
-                <span className="text-xs font-bold text-white block">Аппликейшн Хөтөч</span>
-                <p className="text-[10px] text-neutral-400 leading-relaxed">Бичиг баримт, эцсийн хугацаа болон визний хяналт</p>
+                <span className="text-xs font-bold text-white block">
+                  Аппликейшн Хөтөч
+                </span>
+                <p className="text-[10px] text-neutral-400 leading-relaxed">
+                  Бичиг баримт, эцсийн хугацаа болон визний хяналт
+                </p>
               </div>
             </div>
 
@@ -235,8 +291,12 @@ export default function LockedFeatureGate({
                 <FileText className="w-4 h-4" />
               </div>
               <div className="space-y-0.5">
-                <span className="text-xs font-bold text-white block">AI Эссэ Шүүмж</span>
-                <p className="text-[10px] text-neutral-400 leading-relaxed">Дүрмийн алдаа засах, IELTS/TOEFL эссэ оноо ба зөвлөмж</p>
+                <span className="text-xs font-bold text-white block">
+                  AI Эссэ Шүүмж
+                </span>
+                <p className="text-[10px] text-neutral-400 leading-relaxed">
+                  Дүрмийн алдаа засах, IELTS/TOEFL эссэ оноо ба зөвлөмж
+                </p>
               </div>
             </div>
 
@@ -245,15 +305,17 @@ export default function LockedFeatureGate({
                 <Globe className="w-4 h-4" />
               </div>
               <div className="space-y-0.5">
-                <span className="text-xs font-bold text-white block">Суралцах Улсууд</span>
-                <p className="text-[10px] text-neutral-400 leading-relaxed">10 гаруй улсын амьдрах өртөг, виз, цагийн ажил</p>
+                <span className="text-xs font-bold text-white block">
+                  Суралцах Улсууд
+                </span>
+                <p className="text-[10px] text-neutral-400 leading-relaxed">
+                  10 гаруй улсын амьдрах өртөг, виз, цагийн ажил
+                </p>
               </div>
             </div>
           </div>
         </div>
-
       </div>
-
     </div>
   );
 }
