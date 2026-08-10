@@ -71,6 +71,7 @@ import StudentSignUpForm from "./components/StudentSignUpForm";
 import PaymentModal from "./components/PaymentModal";
 import MembershipStatusCard from "./components/MembershipStatusCard";
 import BnxAdminPanel from "./components/BnxAdminPanel";
+import LockedFeatureGate from "./components/LockedFeatureGate";
 
 // Helper to recursively remove undefined values from objects before sending to Firestore
 const cleanUndefined = (obj: any): any => {
@@ -131,6 +132,30 @@ export default function App() {
   const isAdminUser =
     userProfile?.role === "admin" ||
     currentUser?.email?.toLowerCase() === "naranbadrakh1013@gmail.com";
+  const hasAccess =
+    isAdminUser ||
+    (userProfile?.paymentStatus === "paid" &&
+      userProfile?.accessStatus === "active");
+
+  const handleRefreshProfile = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch("/api/students/assign-reference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uid: currentUser.uid,
+          email: currentUser.email || "",
+        }),
+      });
+      const resData = await res.json();
+      if (resData && resData.profile) {
+        setUserProfile(resData.profile as UserProfile);
+      }
+    } catch (err) {
+      console.error("Refresh profile error:", err);
+    }
+  };
 
   // Computed lists (Static + Custom db entries)
   const allUniversities = [...initialUniversities, ...customUniversities];
@@ -158,6 +183,25 @@ export default function App() {
     }
 
     setLoadingApp(true);
+
+    // Eager profile fetch via server API to ensure instant, reliable loading
+    fetch("/api/students/assign-reference", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid: currentUser.uid,
+        email: currentUser.email || "",
+      }),
+    })
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.profile) {
+          setUserProfile(resData.profile as UserProfile);
+        }
+      })
+      .catch((err) => console.error("Eager profile fetch error:", err))
+      .finally(() => setLoadingApp(false));
+
     const unsubscribes: (() => void)[] = [];
 
     // A) Sync custom universities (admin additions)
@@ -172,7 +216,7 @@ export default function App() {
           });
           setCustomUniversities(list);
         },
-        (err) => console.error("Unis sync err:", err),
+        (err) => console.warn("Unis sync note:", err.message),
       );
       unsubscribes.push(unsubUnis);
     } catch (e) {
@@ -191,7 +235,7 @@ export default function App() {
           });
           setCustomScholarships(list);
         },
-        (err) => console.error("Schols sync err:", err),
+        (err) => console.warn("Schols sync note:", err.message),
       );
       unsubscribes.push(unsubSchols);
     } catch (e) {
@@ -213,7 +257,7 @@ export default function App() {
           });
           setTracks(list);
         },
-        (err) => console.error("Tracks sync err:", err),
+        (err) => console.warn("Tracks sync note:", err.message),
       );
       unsubscribes.push(unsubTracks);
     } catch (e) {
@@ -235,70 +279,31 @@ export default function App() {
           });
           setEssays(list);
         },
-        (err) => console.error("Essays sync err:", err),
+        (err) => console.warn("Essays sync note:", err.message),
       );
       unsubscribes.push(unsubEssays);
     } catch (e) {
       console.error(e);
     }
 
-    // E) Sync user profile (and initialize if empty)
+    // E) Sync user profile in real-time
     try {
       const profileRef = doc(db, "profiles", currentUser.uid);
       const unsubProfile = onSnapshot(
         profileRef,
-        async (docSnap) => {
+        (docSnap) => {
           if (docSnap.exists()) {
             const pData = docSnap.data() as UserProfile;
             setUserProfile(pData);
-            setLoadingApp(false);
-
-            if (!pData.transactionReference) {
-              fetch("/api/students/assign-reference", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  uid: currentUser.uid,
-                  email: currentUser.email || "",
-                }),
-              }).catch((refErr) =>
-                console.error("Assign ref background err:", refErr),
-              );
-            }
-          } else {
-            // Document does not exist in Firestore yet. Trigger server creation
-            try {
-              const res = await fetch("/api/students/assign-reference", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  uid: currentUser.uid,
-                  email: currentUser.email || "",
-                }),
-              });
-              const resData = await res.json();
-              if (resData.profile) {
-                setUserProfile(resData.profile as UserProfile);
-              }
-            } catch (refErr) {
-              console.error(
-                "Failed to assign reference via server API:",
-                refErr,
-              );
-            } finally {
-              setLoadingApp(false);
-            }
           }
         },
         (err) => {
-          console.error("Profile sync err:", err);
-          setLoadingApp(false);
+          console.warn("Profile sync note:", err.message);
         },
       );
       unsubscribes.push(unsubProfile);
     } catch (profileErr) {
       console.error(profileErr);
-      setLoadingApp(false);
     }
 
     return () => {
@@ -790,6 +795,9 @@ export default function App() {
                 {authMode === "signup" ? (
                   <StudentSignUpForm
                     onSignUpSuccess={(userData) => {
+                      if (userData) {
+                        setUserProfile(userData as UserProfile);
+                      }
                       setIsPaymentModalOpen(true);
                     }}
                     onSwitchToLogin={() => setAuthMode("login")}
@@ -963,6 +971,7 @@ export default function App() {
         >
           <GraduationCap className="w-3.5 h-3.5" />
           <span>Сургуулиуд</span>
+          {!hasAccess && <Lock className="w-3 h-3 text-amber-400 ml-0.5" />}
         </button>
 
         <button
@@ -978,6 +987,7 @@ export default function App() {
         >
           <BookOpen className="w-3.5 h-3.5" />
           <span>Тэтгэлэг</span>
+          {!hasAccess && <Lock className="w-3 h-3 text-amber-400 ml-0.5" />}
         </button>
 
         <button
@@ -993,6 +1003,7 @@ export default function App() {
         >
           <Briefcase className="w-3.5 h-3.5" />
           <span>Хөтөч</span>
+          {!hasAccess && <Lock className="w-3 h-3 text-amber-400 ml-0.5" />}
         </button>
 
         <button
@@ -1008,6 +1019,7 @@ export default function App() {
         >
           <FileText className="w-3.5 h-3.5" />
           <span>AI Эссэ</span>
+          {!hasAccess && <Lock className="w-3 h-3 text-amber-400 ml-0.5" />}
         </button>
 
         <button
@@ -1023,6 +1035,7 @@ export default function App() {
         >
           <Home className="w-3.5 h-3.5" />
           <span>Улсууд</span>
+          {!hasAccess && <Lock className="w-3 h-3 text-amber-400 ml-0.5" />}
         </button>
 
         {isAdminUser && (
@@ -1297,14 +1310,21 @@ export default function App() {
               <button
                 id="sidebar-nav-unis"
                 onClick={() => setActiveTab("unis")}
-                className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center gap-3 transition-colors cursor-pointer ${
+                className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center justify-between transition-colors cursor-pointer ${
                   activeTab === "unis"
                     ? "bg-white text-black"
                     : "hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <GraduationCap className="w-4 h-4 shrink-0" />
-                <span>Их Сургуулиудын Сан</span>
+                <div className="flex items-center gap-3">
+                  <GraduationCap className="w-4 h-4 shrink-0" />
+                  <span>Их Сургуулиудын Сан</span>
+                </div>
+                {!hasAccess && (
+                  <span className="inline-flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded">
+                    <Lock className="w-3 h-3" /> Төлбөртэй
+                  </span>
+                )}
               </button>
             </li>
 
@@ -1312,14 +1332,21 @@ export default function App() {
               <button
                 id="sidebar-nav-scholarships"
                 onClick={() => setActiveTab("scholarships")}
-                className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center gap-3 transition-colors cursor-pointer ${
+                className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center justify-between transition-colors cursor-pointer ${
                   activeTab === "scholarships"
                     ? "bg-white text-black"
                     : "hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <BookOpen className="w-4 h-4 shrink-0" />
-                <span>Тэтгэлэгийн Радар</span>
+                <div className="flex items-center gap-3">
+                  <BookOpen className="w-4 h-4 shrink-0" />
+                  <span>Тэтгэлэгийн Радар</span>
+                </div>
+                {!hasAccess && (
+                  <span className="inline-flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded">
+                    <Lock className="w-3 h-3" /> Төлбөртэй
+                  </span>
+                )}
               </button>
             </li>
 
@@ -1327,14 +1354,21 @@ export default function App() {
               <button
                 id="sidebar-nav-tracker"
                 onClick={() => setActiveTab("tracker")}
-                className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center gap-3 transition-colors cursor-pointer ${
+                className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center justify-between transition-colors cursor-pointer ${
                   activeTab === "tracker"
                     ? "bg-white text-black"
                     : "hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <Briefcase className="w-4 h-4 shrink-0" />
-                <span>Аппликейшн Хөтөч</span>
+                <div className="flex items-center gap-3">
+                  <Briefcase className="w-4 h-4 shrink-0" />
+                  <span>Аппликейшн Хөтөч</span>
+                </div>
+                {!hasAccess && (
+                  <span className="inline-flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded">
+                    <Lock className="w-3 h-3" /> Төлбөртэй
+                  </span>
+                )}
               </button>
             </li>
 
@@ -1342,14 +1376,21 @@ export default function App() {
               <button
                 id="sidebar-nav-essays"
                 onClick={() => setActiveTab("essays")}
-                className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center gap-3 transition-colors cursor-pointer ${
+                className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center justify-between transition-colors cursor-pointer ${
                   activeTab === "essays"
                     ? "bg-white text-black"
                     : "hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <FileText className="w-4 h-4 shrink-0" />
-                <span>AI Эссэ Туслах</span>
+                <div className="flex items-center gap-3">
+                  <FileText className="w-4 h-4 shrink-0" />
+                  <span>AI Эссэ Туслах</span>
+                </div>
+                {!hasAccess && (
+                  <span className="inline-flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded">
+                    <Lock className="w-3 h-3" /> Төлбөртэй
+                  </span>
+                )}
               </button>
             </li>
 
@@ -1357,14 +1398,21 @@ export default function App() {
               <button
                 id="sidebar-nav-countries"
                 onClick={() => setActiveTab("countries")}
-                className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center gap-3 transition-colors cursor-pointer ${
+                className={`w-full text-left px-3.5 py-3 rounded-xl font-bold flex items-center justify-between transition-colors cursor-pointer ${
                   activeTab === "countries"
                     ? "bg-white text-black"
                     : "hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <Home className="w-4 h-4 shrink-0" />
-                <span>Суралцах Улсууд</span>
+                <div className="flex items-center gap-3">
+                  <Home className="w-4 h-4 shrink-0" />
+                  <span>Суралцах Улсууд</span>
+                </div>
+                {!hasAccess && (
+                  <span className="inline-flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded">
+                    <Lock className="w-3 h-3" /> Төлбөртэй
+                  </span>
+                )}
               </button>
             </li>
 
@@ -1448,6 +1496,7 @@ export default function App() {
           <MembershipStatusCard
             userProfile={userProfile}
             onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+            onRefreshProfile={handleRefreshProfile}
           />
         )}
 
@@ -1510,102 +1559,153 @@ export default function App() {
         )}
 
         {/* Universities Tab */}
-        {activeTab === "unis" && userProfile && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                Их Сургуулиудын Шалгуур ба Тохирох Хайлт
-              </h1>
-              <p className="text-xs text-neutral-500 leading-relaxed mt-1">
-                Бакалавр, Магистрын хөтөлбөр, санхүүгийн жилийн зардал болон
-                элсэлтийн босгуудыг харьцуулах ухаалаг хайлт.
-              </p>
+        {activeTab === "unis" &&
+          userProfile &&
+          (hasAccess ? (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">
+                  Их Сургуулиудын Шалгуур ба Тохирох Хайлт
+                </h1>
+                <p className="text-xs text-neutral-500 leading-relaxed mt-1">
+                  Бакалавр, Магистрын хөтөлбөр, санхүүгийн жилийн зардал болон
+                  элсэлтийн босгуудыг харьцуулах ухаалаг хайлт.
+                </p>
+              </div>
+              <UniversityFinder
+                universities={allUniversities}
+                profile={userProfile}
+                onTrackUniversity={handleAutoTrackUniversity}
+              />
             </div>
-            <UniversityFinder
-              universities={allUniversities}
-              profile={userProfile}
-              onTrackUniversity={handleAutoTrackUniversity}
+          ) : (
+            <LockedFeatureGate
+              userProfile={userProfile}
+              featureTitle="Их Сургуулиудын Шалгуур & AI Тооцоолол"
+              featureDescription="100+ шилдэг их сургуулийн элсэлтийн босго, төлбөр, шаардлага болон Gemini AI тохирох магадлалын шинжилгээ"
+              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+              onRefreshProfile={handleRefreshProfile}
             />
-          </div>
-        )}
+          ))}
 
         {/* Scholarships Tab */}
-        {activeTab === "scholarships" && userProfile && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                Санхүүжилт ба Тэтгэлгүүдийн Сан
-              </h1>
-              <p className="text-xs text-neutral-500 mt-1">
-                Монгол оюутанд зориулсан шилдэг тэтгэлгүүдийн хамрах хүрээ,
-                бэлтгэл заавар.
-              </p>
+        {activeTab === "scholarships" &&
+          userProfile &&
+          (hasAccess ? (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">
+                  Санхүүжилт ба Тэтгэлгүүдийн Сан
+                </h1>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Монгол оюутанд зориулсан шилдэг тэтгэлгүүдийн хамрах хүрээ,
+                  бэлтгэл заавар.
+                </p>
+              </div>
+              <ScholarshipFinder
+                scholarships={allScholarships}
+                profile={userProfile}
+              />
             </div>
-            <ScholarshipFinder
-              scholarships={allScholarships}
-              profile={userProfile}
+          ) : (
+            <LockedFeatureGate
+              userProfile={userProfile}
+              featureTitle="Санхүүжилт ба Тэтгэлгүүдийн Сан"
+              featureDescription="Монгол оюутнуудад зориулсан 100% болон бүтэн зардлаар суралцах тэтгэлгүүдийн шалгуур, бэлтгэл заавар"
+              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+              onRefreshProfile={handleRefreshProfile}
             />
-          </div>
-        )}
+          ))}
 
         {/* Tracker Pipeline Hub Tab */}
-        {activeTab === "tracker" && userProfile && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                Аппликейшны Хяналтын Самбар
-              </h1>
-              <p className="text-xs text-neutral-500 mt-1">
-                Сонгосон их сургуулиудын бүрдүүлэх материал, эцсийн хугацаа
-                болон визний явцыг хянах.
-              </p>
+        {activeTab === "tracker" &&
+          userProfile &&
+          (hasAccess ? (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">
+                  Аппликейшны Хяналтын Самбар
+                </h1>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Сонгосон их сургуулиудын бүрдүүлэх материал, эцсийн хугацаа
+                  болон визний явцыг хянах.
+                </p>
+              </div>
+              <ApplicationTracker
+                tracks={tracks}
+                universities={allUniversities}
+                onSaveTrack={handleSaveTrack}
+                onDeleteTrack={handleDeleteTrack}
+                isLoading={savingData}
+              />
             </div>
-            <ApplicationTracker
-              tracks={tracks}
-              universities={allUniversities}
-              onSaveTrack={handleSaveTrack}
-              onDeleteTrack={handleDeleteTrack}
-              isLoading={savingData}
+          ) : (
+            <LockedFeatureGate
+              userProfile={userProfile}
+              featureTitle="Аппликейшны Хяналтын Самбар (Tracker)"
+              featureDescription="Сонгосон их сургуулиудын бүрдүүлэх материал, эцсийн хугацаа болон визний явцыг иж бүрэн хянах"
+              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+              onRefreshProfile={handleRefreshProfile}
             />
-          </div>
-        )}
+          ))}
 
         {/* AI Essays Assistant Tab */}
-        {activeTab === "essays" && userProfile && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                Хувийн Тодорхойлолт Эссэ Хянагч (AI)
-              </h1>
-              <p className="text-xs text-neutral-500 mt-1">
-                AI-ийн тусламжтай дүрмийн алдаа засах, IELTS загварын
-                нарийвчилсан шүүмж, зөвлөгөө болон оноо тооцоолох.
-              </p>
+        {activeTab === "essays" &&
+          userProfile &&
+          (hasAccess ? (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">
+                  Хувийн Тодорхойлолт Эссэ Хянагч (AI)
+                </h1>
+                <p className="text-xs text-neutral-500 mt-1">
+                  AI-ийн тусламжтай дүрмийн алдаа засах, IELTS загварын
+                  нарийвчилсан шүүмж, зөвлөгөө болон оноо тооцоолох.
+                </p>
+              </div>
+              <EssayHelper
+                essays={essays}
+                onSaveEssay={handleSaveEssay}
+                onDeleteEssay={handleDeleteEssay}
+                isLoading={savingData}
+                uid={currentUser?.uid}
+                email={currentUser?.email || ""}
+              />
             </div>
-            <EssayHelper
-              essays={essays}
-              onSaveEssay={handleSaveEssay}
-              onDeleteEssay={handleDeleteEssay}
-              isLoading={savingData}
+          ) : (
+            <LockedFeatureGate
+              userProfile={userProfile}
+              featureTitle="Хувийн Тодорхойлолт AI Эссэ Хянагч"
+              featureDescription="Gemini AI-ийн тусламжтай дүрмийн алдаа засах, IELTS/TOEFL эссэний онооны нарийвчилсан шүүмж болон зөвлөгөө"
+              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+              onRefreshProfile={handleRefreshProfile}
             />
-          </div>
-        )}
+          ))}
 
         {/* Countries Guide Guides Tab */}
-        {activeTab === "countries" && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                Суралцах ба Амьдрах Улсуудын Мэдээлэл
-              </h1>
-              <p className="text-xs text-neutral-500 mt-1 font-sans">
-                10 өөр улсад амьдрах нийт өртөг, виз авах явц болон хууль ёсоор
-                цагийн ажил хийх журам.
-              </p>
+        {activeTab === "countries" &&
+          (hasAccess ? (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">
+                  Суралцах ба Амьдрах Улсуудын Мэдээлэл
+                </h1>
+                <p className="text-xs text-neutral-500 mt-1 font-sans">
+                  10 өөр улсад амьдрах нийт өртөг, виз авах явц болон хууль
+                  ёсоор цагийн ажил хийх журам.
+                </p>
+              </div>
+              <CountryExplorer />
             </div>
-            <CountryExplorer />
-          </div>
-        )}
+          ) : (
+            <LockedFeatureGate
+              userProfile={userProfile}
+              featureTitle="Суралцах & Амьдрах Улсуудын Мэдээлэл"
+              featureDescription="10 гаруй олон улсын амьдрах нийт өртөг, виз авах явц болон хууль ёсоор цагийн ажил хийх журам"
+              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+              onRefreshProfile={handleRefreshProfile}
+            />
+          ))}
       </main>
     </div>
   );

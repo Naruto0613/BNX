@@ -16,6 +16,8 @@ interface EssayHelperProps {
   onSaveEssay: (essay: Essay) => Promise<void>;
   onDeleteEssay: (essayId: string) => Promise<void>;
   isLoading: boolean;
+  uid?: string;
+  email?: string;
 }
 
 export default function EssayHelper({
@@ -23,6 +25,8 @@ export default function EssayHelper({
   onSaveEssay,
   onDeleteEssay,
   isLoading,
+  uid,
+  email,
 }: EssayHelperProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -58,6 +62,8 @@ export default function EssayHelper({
         body: JSON.stringify({
           title: title || "My Admissions Essay",
           content,
+          uid,
+          email,
         }),
       });
 
