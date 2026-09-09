@@ -1,14 +1,25 @@
 import React, { useState } from "react";
-import { User, Mail, Lock, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import {
+  User,
+  Mail,
+  Lock,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+} from "lucide-react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
 interface StudentSignUpFormProps {
   onSignUpSuccess: (userData: any) => void;
   onSwitchToLogin: () => void;
 }
 
-export default function StudentSignUpForm({ onSignUpSuccess, onSwitchToLogin }: StudentSignUpFormProps) {
+export default function StudentSignUpForm({
+  onSignUpSuccess,
+  onSwitchToLogin,
+}: StudentSignUpFormProps) {
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
@@ -22,7 +33,13 @@ export default function StudentSignUpForm({ onSignUpSuccess, onSwitchToLogin }: 
     setError(null);
 
     // Validation
-    if (!lastName.trim() || !firstName.trim() || !email.trim() || !password || !confirmPassword) {
+    if (
+      !lastName.trim() ||
+      !firstName.trim() ||
+      !email.trim() ||
+      !password ||
+      !confirmPassword
+    ) {
       setError("Бүх талбарыг бүрэн бөглөнө үү.");
       return;
     }
@@ -41,10 +58,14 @@ export default function StudentSignUpForm({ onSignUpSuccess, onSwitchToLogin }: 
 
     try {
       // 1. Create Firebase Auth user
-      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password,
+      );
       const user = userCredential.user;
 
-      // 2. Call server-side API to assign atomic, unique transaction reference (student_00, student_01, ...)
+      // 2. Try server-side API to assign atomic, unique transaction reference
       let assignedProfile: any = null;
       try {
         const res = await fetch("/api/students/assign-reference", {
@@ -54,43 +75,69 @@ export default function StudentSignUpForm({ onSignUpSuccess, onSwitchToLogin }: 
             uid: user.uid,
             firstName: firstName.trim(),
             lastName: lastName.trim(),
-            email: email.trim()
-          })
+            email: email.trim(),
+          }),
         });
 
-        const data = await res.json();
-        if (data && data.profile) {
-          assignedProfile = data.profile;
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.profile) {
+            assignedProfile = data.profile;
+          }
         }
       } catch (refErr) {
-        console.warn("Assign reference note:", refErr);
+        console.warn("Assign reference fallback to client:", refErr);
       }
 
-      // 3. Trigger callback with complete profile object
-      const isUserAdmin = (user.email || email.trim()).toLowerCase() === 'naranbadrakh1013@gmail.com';
-      onSignUpSuccess(assignedProfile || {
+      // 3. Fallback or ensure profile exists in Firestore directly
+      const isUserAdmin =
+        (user.email || email.trim()).toLowerCase() ===
+        "naranbadrakh1013@gmail.com";
+      const completeProfile = assignedProfile || {
         uid: user.uid,
         email: user.email || email.trim(),
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        name: `${lastName.trim()} ${firstName.trim()}`.trim() || user.email || email.trim(),
-        role: isUserAdmin ? 'admin' : 'student',
-        transactionReference: "student_01",
-        paymentStatus: 'paid',
-        accessStatus: 'active',
+        name:
+          `${lastName.trim()} ${firstName.trim()}`.trim() ||
+          user.email ||
+          email.trim(),
+        role: isUserAdmin ? "admin" : "student",
+        transactionReference: `BNX-${Math.floor(1000 + Math.random() * 9000)}`,
+        paymentStatus: "paid",
+        accessStatus: "active",
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
+        updatedAt: new Date().toISOString(),
+      };
 
+      try {
+        await setDoc(doc(db, "profiles", user.uid), completeProfile, {
+          merge: true,
+        });
+      } catch (dbErr) {
+        console.warn("Direct Firestore profile write note:", dbErr);
+      }
+
+      // 4. Trigger callback with complete profile object
+      onSignUpSuccess(completeProfile);
     } catch (err: any) {
       console.error("Signup error:", err);
       let msg = err.message || "Бүртгүүлэхэд алдаа гарлаа.";
-      const isEmailInUse = err.code === 'auth/email-already-in-use' || (err.message && err.message.includes('email-already-in-use'));
+      const isEmailInUse =
+        err.code === "auth/email-already-in-use" ||
+        (err.message && err.message.includes("email-already-in-use"));
       if (isEmailInUse) {
-        msg = "Энэ цахим хаягаар аль хэдийн бүртгэгдсэн байна. Та нэвтрэх хэсгийг сонгон нэвтэрнэ үү.";
-      } else if (err.code === 'auth/invalid-email' || (err.message && err.message.includes('invalid-email'))) {
+        msg =
+          "Энэ цахим хаягаар аль хэдийн бүртгэгдсэн байна. Та нэвтрэх хэсгийг сонгон нэвтэрнэ үү.";
+      } else if (
+        err.code === "auth/invalid-email" ||
+        (err.message && err.message.includes("invalid-email"))
+      ) {
         msg = "Зөв и-мэйл хаяг оруулна уу.";
-      } else if (err.code === 'auth/weak-password' || (err.message && err.message.includes('weak-password'))) {
+      } else if (
+        err.code === "auth/weak-password" ||
+        (err.message && err.message.includes("weak-password"))
+      ) {
         msg = "Нууц үг хэт богино эсвэл сул байна.";
       }
       setError(msg);
@@ -101,7 +148,6 @@ export default function StudentSignUpForm({ onSignUpSuccess, onSwitchToLogin }: 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3.5">
-      
       {error && (
         <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-600 rounded-xl text-[11px] leading-relaxed flex items-start justify-between gap-2">
           <div className="flex items-start gap-2">
@@ -233,10 +279,10 @@ export default function StudentSignUpForm({ onSignUpSuccess, onSwitchToLogin }: 
           onClick={onSwitchToLogin}
           className="text-xs text-neutral-500 hover:text-black transition font-medium"
         >
-          Аль хэдийн бүртгэлтэй юу? <span className="underline font-bold text-black">Нэвтрэх</span>
+          Аль хэдийн бүртгэлтэй юу?{" "}
+          <span className="underline font-bold text-black">Нэвтрэх</span>
         </button>
       </div>
-
     </form>
   );
 }

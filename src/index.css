@@ -79,7 +79,7 @@ body {
 }
 
 /* CORE PREMIUM OVERRIDES FOR DARK WORKSPACE */
-.min-h-screen, .bg-white, .bg-neutral-50 {
+.min-h-screen {
   background-color: #050507 !important;
   color: #eeeef2 !important;
 }
@@ -115,58 +115,80 @@ input:focus, select:focus, textarea:focus {
   outline: none !important;
 }
 
-/* High contrast typography adjustments */
-.text-black, .text-zinc-900, .text-neutral-900 {
-  color: #ffffff !important;
-}
-
-h1, h2, h3, h4, th {
-  color: #ffffff !important;
-}
-
-.text-neutral-500, .text-neutral-450, .text-zinc-500 {
-  color: #a1a1aa !important;
-}
-
-.text-neutral-400, .text-zinc-400 {
-  color: #cacace !important;
-}
-
 /* Grid border elements */
 .border, .border-neutral-100, .border-neutral-200, .border-zinc-200, .border-neutral-800, .border-neutral-850, .border-white\/10 {
   border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Align fast demo triggers and premium solid buttons */
-[id="btn-fast-log-student"], [id="btn-fast-log-admin"], [id="btn-auth-submit"], [id="btn-submit-track"], [id="btn-new-essay"], button.bg-black {
+/* High-contrast solid primary white buttons & CTA triggers */
+button.bg-white,
+.bg-white.text-black,
+button[class*="bg-white"],
+[id="btn-fast-log-student"],
+[id="btn-fast-log-admin"],
+[id="btn-auth-submit"],
+[id="btn-submit-track"],
+[id="btn-new-essay"],
+button.bg-black {
   background-color: #ffffff !important;
   color: #000000 !important;
   border: 1.5px solid #ffffff !important;
   font-weight: 600 !important;
 }
 
-[id="btn-fast-log-student"]:hover, [id="btn-fast-log-admin"]:hover, [id="btn-auth-submit"]:hover, button.bg-black:hover {
+button.bg-white *,
+.bg-white.text-black *,
+button[class*="bg-white"] *,
+[id="btn-fast-log-student"] *,
+[id="btn-fast-log-admin"] *,
+[id="btn-auth-submit"] *,
+button.bg-black * {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+button.bg-white:hover,
+.bg-white.text-black:hover,
+button[class*="bg-white"]:hover,
+[id="btn-fast-log-student"]:hover,
+[id="btn-fast-log-admin"]:hover,
+[id="btn-auth-submit"]:hover,
+button.bg-black:hover {
   background-color: #e4e4e7 !important;
   border-color: #e4e4e7 !important;
+  color: #000000 !important;
 }
 
 /* Fix active and inactive tab contrast on Navigations */
-nav button {
-  color: #a1a1aa !important;
+nav button,
+.md\:hidden button {
+  color: #a1a1aa;
 }
 
-nav button:hover {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  color: #ffffff !important;
+nav button:hover,
+.md\:hidden button:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
 }
 
-/* When a tab button is chosen (has white or custom background class) make background white and text solid black */
+/* Active navigation tab item (with white background) */
+nav button.bg-white,
+nav button[class*="bg-white"],
 nav button[class*="bg-black"],
-nav button[class*="bg-black"] *,
-nav button[class*="bg-black"] svg,
-.md\:hidden button[class*="bg-black"],
-.md\:hidden button[class*="bg-black"] * {
+.md\:hidden button.bg-white,
+.md\:hidden button[class*="bg-white"],
+.md\:hidden button[class*="bg-black"] {
   background-color: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15) !important;
+}
+
+nav button.bg-white *,
+nav button[class*="bg-white"] *,
+nav button[class*="bg-black"] *,
+.md\:hidden button.bg-white *,
+.md\:hidden button[class*="bg-white"] *,
+.md\:hidden button[class*="bg-black"] * {
   color: #000000 !important;
   stroke: #000000 !important;
 }
