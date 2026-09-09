@@ -49,7 +49,7 @@ def uni(uid, name, short_name, country, city, continent, qs, utype, website,
         "applicationDeadlines": {
             "earlyAction": "November 1" if country == "United States" else None,
             "regularDecision": "January 15" if country == "United States" else "February 1",
-            "spring": "October 1"
+            "spring": "Ocstober 1"
         },
         "languageRequirements": {
             "ielts": ielts,

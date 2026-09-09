@@ -68,10 +68,7 @@ import EssayHelper from "./components/EssayHelper";
 import CountryExplorer from "./components/CountryExplorer";
 import BnxLogo from "./components/BnxLogo";
 import StudentSignUpForm from "./components/StudentSignUpForm";
-import PaymentModal from "./components/PaymentModal";
-import MembershipStatusCard from "./components/MembershipStatusCard";
 import BnxAdminPanel from "./components/BnxAdminPanel";
-import LockedFeatureGate from "./components/LockedFeatureGate";
 
 // Helper to recursively remove undefined values from objects before sending to Firestore
 const cleanUndefined = (obj: any): any => {
@@ -112,9 +109,6 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [isForgotPasswordSent, setIsForgotPasswordSent] = useState(false);
 
-  // BNX Payment & Admin Modal States
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-
   // App Navigation & layouts
   const [activeTab, setActiveTab] = useState<
     | "cv"
@@ -132,10 +126,7 @@ export default function App() {
   const isAdminUser =
     userProfile?.role === "admin" ||
     currentUser?.email?.toLowerCase() === "naranbadrakh1013@gmail.com";
-  const hasAccess =
-    isAdminUser ||
-    (userProfile?.paymentStatus === "paid" &&
-      userProfile?.accessStatus === "active");
+  const hasAccess = true;
 
   const handleRefreshProfile = async () => {
     if (!currentUser) return;
@@ -798,7 +789,6 @@ export default function App() {
                       if (userData) {
                         setUserProfile(userData as UserProfile);
                       }
-                      setIsPaymentModalOpen(true);
                     }}
                     onSwitchToLogin={() => setAuthMode("login")}
                   />
@@ -971,7 +961,6 @@ export default function App() {
         >
           <GraduationCap className="w-3.5 h-3.5" />
           <span>Сургуулиуд</span>
-          {!hasAccess && <Lock className="w-3 h-3 text-amber-400 ml-0.5" />}
         </button>
 
         <button
@@ -987,7 +976,6 @@ export default function App() {
         >
           <BookOpen className="w-3.5 h-3.5" />
           <span>Тэтгэлэг</span>
-          {!hasAccess && <Lock className="w-3 h-3 text-amber-400 ml-0.5" />}
         </button>
 
         <button
@@ -1003,7 +991,6 @@ export default function App() {
         >
           <Briefcase className="w-3.5 h-3.5" />
           <span>Хөтөч</span>
-          {!hasAccess && <Lock className="w-3 h-3 text-amber-400 ml-0.5" />}
         </button>
 
         <button
@@ -1019,7 +1006,6 @@ export default function App() {
         >
           <FileText className="w-3.5 h-3.5" />
           <span>AI Эссэ</span>
-          {!hasAccess && <Lock className="w-3 h-3 text-amber-400 ml-0.5" />}
         </button>
 
         <button
@@ -1035,7 +1021,6 @@ export default function App() {
         >
           <Home className="w-3.5 h-3.5" />
           <span>Улсууд</span>
-          {!hasAccess && <Lock className="w-3 h-3 text-amber-400 ml-0.5" />}
         </button>
 
         {isAdminUser && (
@@ -1320,11 +1305,6 @@ export default function App() {
                   <GraduationCap className="w-4 h-4 shrink-0" />
                   <span>Их Сургуулиудын Сан</span>
                 </div>
-                {!hasAccess && (
-                  <span className="inline-flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded">
-                    <Lock className="w-3 h-3" /> Төлбөртэй
-                  </span>
-                )}
               </button>
             </li>
 
@@ -1342,11 +1322,6 @@ export default function App() {
                   <BookOpen className="w-4 h-4 shrink-0" />
                   <span>Тэтгэлэгийн Радар</span>
                 </div>
-                {!hasAccess && (
-                  <span className="inline-flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded">
-                    <Lock className="w-3 h-3" /> Төлбөртэй
-                  </span>
-                )}
               </button>
             </li>
 
@@ -1364,11 +1339,6 @@ export default function App() {
                   <Briefcase className="w-4 h-4 shrink-0" />
                   <span>Аппликейшн Хөтөч</span>
                 </div>
-                {!hasAccess && (
-                  <span className="inline-flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded">
-                    <Lock className="w-3 h-3" /> Төлбөртэй
-                  </span>
-                )}
               </button>
             </li>
 
@@ -1386,11 +1356,6 @@ export default function App() {
                   <FileText className="w-4 h-4 shrink-0" />
                   <span>AI Эссэ Туслах</span>
                 </div>
-                {!hasAccess && (
-                  <span className="inline-flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded">
-                    <Lock className="w-3 h-3" /> Төлбөртэй
-                  </span>
-                )}
               </button>
             </li>
 
@@ -1408,11 +1373,6 @@ export default function App() {
                   <Home className="w-4 h-4 shrink-0" />
                   <span>Суралцах Улсууд</span>
                 </div>
-                {!hasAccess && (
-                  <span className="inline-flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded">
-                    <Lock className="w-3 h-3" /> Төлбөртэй
-                  </span>
-                )}
               </button>
             </li>
 
@@ -1471,35 +1431,6 @@ export default function App() {
 
       {/* PRIMARY VIEWS CONTENT WORKSPACE */}
       <main className="flex-1 p-3.5 sm:p-6 md:p-10 lg:p-12 max-w-7xl mx-auto w-full overflow-y-auto space-y-6">
-        {/* Payment Submission Modal */}
-        {isPaymentModalOpen && currentUser && (
-          <PaymentModal
-            isOpen={isPaymentModalOpen}
-            onClose={() => setIsPaymentModalOpen(false)}
-            uid={currentUser.uid}
-            email={currentUser.email || ""}
-            studentName={
-              userProfile?.name || currentUser.email?.split("@")[0] || ""
-            }
-            transactionReference={
-              userProfile?.transactionReference || "student_00"
-            }
-            paymentStatus={userProfile?.paymentStatus || "unpaid"}
-            onPaymentSubmitted={() => {
-              setIsPaymentModalOpen(false);
-            }}
-          />
-        )}
-
-        {/* Membership Status Bar for Students */}
-        {userProfile && activeTab !== "admin" && (
-          <MembershipStatusCard
-            userProfile={userProfile}
-            onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-            onRefreshProfile={handleRefreshProfile}
-          />
-        )}
-
         {/* BNX Admin Panel Tab */}
         {activeTab === "admin" && isAdminUser && currentUser && (
           <BnxAdminPanel
@@ -1559,153 +1490,104 @@ export default function App() {
         )}
 
         {/* Universities Tab */}
-        {activeTab === "unis" &&
-          userProfile &&
-          (hasAccess ? (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">
-                  Их Сургуулиудын Шалгуур ба Тохирох Хайлт
-                </h1>
-                <p className="text-xs text-neutral-500 leading-relaxed mt-1">
-                  Бакалавр, Магистрын хөтөлбөр, санхүүгийн жилийн зардал болон
-                  элсэлтийн босгуудыг харьцуулах ухаалаг хайлт.
-                </p>
-              </div>
-              <UniversityFinder
-                universities={allUniversities}
-                profile={userProfile}
-                onTrackUniversity={handleAutoTrackUniversity}
-              />
+        {activeTab === "unis" && userProfile && (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                Их Сургуулиудын Шалгуур ба Тохирох Хайлт
+              </h1>
+              <p className="text-xs text-neutral-500 leading-relaxed mt-1">
+                Бакалавр, Магистрын хөтөлбөр, санхүүгийн жилийн зардал болон
+                элсэлтийн босгуудыг харьцуулах ухаалаг хайлт.
+              </p>
             </div>
-          ) : (
-            <LockedFeatureGate
-              userProfile={userProfile}
-              featureTitle="Их Сургуулиудын Шалгуур & AI Тооцоолол"
-              featureDescription="100+ шилдэг их сургуулийн элсэлтийн босго, төлбөр, шаардлага болон Gemini AI тохирох магадлалын шинжилгээ"
-              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-              onRefreshProfile={handleRefreshProfile}
+            <UniversityFinder
+              universities={allUniversities}
+              profile={userProfile}
+              onTrackUniversity={handleAutoTrackUniversity}
             />
-          ))}
+          </div>
+        )}
 
         {/* Scholarships Tab */}
-        {activeTab === "scholarships" &&
-          userProfile &&
-          (hasAccess ? (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">
-                  Санхүүжилт ба Тэтгэлгүүдийн Сан
-                </h1>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Монгол оюутанд зориулсан шилдэг тэтгэлгүүдийн хамрах хүрээ,
-                  бэлтгэл заавар.
-                </p>
-              </div>
-              <ScholarshipFinder
-                scholarships={allScholarships}
-                profile={userProfile}
-              />
+        {activeTab === "scholarships" && userProfile && (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                Санхүүжилт ба Тэтгэлгүүдийн Сан
+              </h1>
+              <p className="text-xs text-neutral-500 mt-1">
+                Монгол оюутанд зориулсан шилдэг тэтгэлгүүдийн хамрах хүрээ,
+                бэлтгэл заавар.
+              </p>
             </div>
-          ) : (
-            <LockedFeatureGate
-              userProfile={userProfile}
-              featureTitle="Санхүүжилт ба Тэтгэлгүүдийн Сан"
-              featureDescription="Монгол оюутнуудад зориулсан 100% болон бүтэн зардлаар суралцах тэтгэлгүүдийн шалгуур, бэлтгэл заавар"
-              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-              onRefreshProfile={handleRefreshProfile}
+            <ScholarshipFinder
+              scholarships={allScholarships}
+              profile={userProfile}
             />
-          ))}
+          </div>
+        )}
 
         {/* Tracker Pipeline Hub Tab */}
-        {activeTab === "tracker" &&
-          userProfile &&
-          (hasAccess ? (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">
-                  Аппликейшны Хяналтын Самбар
-                </h1>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Сонгосон их сургуулиудын бүрдүүлэх материал, эцсийн хугацаа
-                  болон визний явцыг хянах.
-                </p>
-              </div>
-              <ApplicationTracker
-                tracks={tracks}
-                universities={allUniversities}
-                onSaveTrack={handleSaveTrack}
-                onDeleteTrack={handleDeleteTrack}
-                isLoading={savingData}
-              />
+        {activeTab === "tracker" && userProfile && (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                Аппликейшны Хяналтын Самбар
+              </h1>
+              <p className="text-xs text-neutral-500 mt-1">
+                Сонгосон их сургуулиудын бүрдүүлэх материал, эцсийн хугацаа
+                болон визний явцыг хянах.
+              </p>
             </div>
-          ) : (
-            <LockedFeatureGate
-              userProfile={userProfile}
-              featureTitle="Аппликейшны Хяналтын Самбар (Tracker)"
-              featureDescription="Сонгосон их сургуулиудын бүрдүүлэх материал, эцсийн хугацаа болон визний явцыг иж бүрэн хянах"
-              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-              onRefreshProfile={handleRefreshProfile}
+            <ApplicationTracker
+              tracks={tracks}
+              universities={allUniversities}
+              onSaveTrack={handleSaveTrack}
+              onDeleteTrack={handleDeleteTrack}
+              isLoading={savingData}
             />
-          ))}
+          </div>
+        )}
 
         {/* AI Essays Assistant Tab */}
-        {activeTab === "essays" &&
-          userProfile &&
-          (hasAccess ? (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">
-                  Хувийн Тодорхойлолт Эссэ Хянагч (AI)
-                </h1>
-                <p className="text-xs text-neutral-500 mt-1">
-                  AI-ийн тусламжтай дүрмийн алдаа засах, IELTS загварын
-                  нарийвчилсан шүүмж, зөвлөгөө болон оноо тооцоолох.
-                </p>
-              </div>
-              <EssayHelper
-                essays={essays}
-                onSaveEssay={handleSaveEssay}
-                onDeleteEssay={handleDeleteEssay}
-                isLoading={savingData}
-                uid={currentUser?.uid}
-                email={currentUser?.email || ""}
-              />
+        {activeTab === "essays" && userProfile && (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                Хувийн Тодорхойлолт Эссэ Хянагч (AI)
+              </h1>
+              <p className="text-xs text-neutral-500 mt-1">
+                AI-ийн тусламжтай дүрмийн алдаа засах, IELTS загварын
+                нарийвчилсан шүүмж, зөвлөгөө болон оноо тооцоолох.
+              </p>
             </div>
-          ) : (
-            <LockedFeatureGate
-              userProfile={userProfile}
-              featureTitle="Хувийн Тодорхойлолт AI Эссэ Хянагч"
-              featureDescription="Gemini AI-ийн тусламжтай дүрмийн алдаа засах, IELTS/TOEFL эссэний онооны нарийвчилсан шүүмж болон зөвлөгөө"
-              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-              onRefreshProfile={handleRefreshProfile}
+            <EssayHelper
+              essays={essays}
+              onSaveEssay={handleSaveEssay}
+              onDeleteEssay={handleDeleteEssay}
+              isLoading={savingData}
+              uid={currentUser?.uid}
+              email={currentUser?.email || ""}
             />
-          ))}
+          </div>
+        )}
 
         {/* Countries Guide Guides Tab */}
-        {activeTab === "countries" &&
-          (hasAccess ? (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">
-                  Суралцах ба Амьдрах Улсуудын Мэдээлэл
-                </h1>
-                <p className="text-xs text-neutral-500 mt-1 font-sans">
-                  10 өөр улсад амьдрах нийт өртөг, виз авах явц болон хууль
-                  ёсоор цагийн ажил хийх журам.
-                </p>
-              </div>
-              <CountryExplorer />
+        {activeTab === "countries" && (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                Суралцах ба Амьдрах Улсуудын Мэдээлэл
+              </h1>
+              <p className="text-xs text-neutral-500 mt-1 font-sans">
+                10 өөр улсад амьдрах нийт өртөг, виз авах явц болон хууль ёсоор
+                цагийн ажил хийх журам.
+              </p>
             </div>
-          ) : (
-            <LockedFeatureGate
-              userProfile={userProfile}
-              featureTitle="Суралцах & Амьдрах Улсуудын Мэдээлэл"
-              featureDescription="10 гаруй олон улсын амьдрах нийт өртөг, виз авах явц болон хууль ёсоор цагийн ажил хийх журам"
-              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-              onRefreshProfile={handleRefreshProfile}
-            />
-          ))}
+            <CountryExplorer />
+          </div>
+        )}
       </main>
     </div>
   );

@@ -86,7 +86,7 @@ export default function StudentSignUpForm({
         console.warn("Assign reference note:", refErr);
       }
 
-      // 3. Trigger callback with complete profile object to open Payment Page
+      // 3. Trigger callback with complete profile object
       const isUserAdmin =
         (user.email || email.trim()).toLowerCase() ===
         "naranbadrakh1013@gmail.com";
@@ -102,8 +102,8 @@ export default function StudentSignUpForm({
             email.trim(),
           role: isUserAdmin ? "admin" : "student",
           transactionReference: "student_01",
-          paymentStatus: isUserAdmin ? "paid" : "unpaid",
-          accessStatus: isUserAdmin ? "active" : "inactive",
+          paymentStatus: "paid",
+          accessStatus: "active",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },

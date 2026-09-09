@@ -149,36 +149,8 @@ async function verifyUserPaymentAccess(
   uid?: string,
   email?: string,
 ): Promise<boolean> {
-  if (!uid && !email) return false;
-  if (email && email.toLowerCase() === "naranbadrakh1013@gmail.com")
-    return true;
-  try {
-    if (uid) {
-      const profileSnap = await getDoc(doc(dbServer, "profiles", uid));
-      if (profileSnap.exists()) {
-        const data = profileSnap.data();
-        if (data.role === "admin") return true;
-        if (data.paymentStatus === "paid" && data.accessStatus === "active")
-          return true;
-      }
-    }
-    if (email) {
-      const q = query(
-        collection(dbServer, "profiles"),
-        where("email", "==", email),
-      );
-      const qSnap = await getDocs(q);
-      if (!qSnap.empty) {
-        const data = qSnap.docs[0].data();
-        if (data.role === "admin") return true;
-        if (data.paymentStatus === "paid" && data.accessStatus === "active")
-          return true;
-      }
-    }
-  } catch (e) {
-    console.error("verifyUserPaymentAccess error:", e);
-  }
-  return false;
+  // Payment system is disabled for now - open access to all users
+  return true;
 }
 
 // 1. AI University Recommendation Endpoint
@@ -544,8 +516,8 @@ app.post("/api/students/assign-reference", async (req, res) => {
           email,
           role: isAdminUser ? "admin" : "student",
           transactionReference,
-          paymentStatus: isAdminUser ? "paid" : "unpaid",
-          accessStatus: isAdminUser ? "active" : "inactive",
+          paymentStatus: "paid",
+          accessStatus: "active",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -587,8 +559,8 @@ app.post("/api/students/assign-reference", async (req, res) => {
         email,
         role: isAdminUser ? "admin" : "student",
         transactionReference,
-        paymentStatus: isAdminUser ? "paid" : "unpaid",
-        accessStatus: isAdminUser ? "active" : "inactive",
+        paymentStatus: "paid",
+        accessStatus: "active",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -617,14 +589,8 @@ app.post("/api/students/assign-reference", async (req, res) => {
             ? "admin"
             : "student",
         transactionReference: "student_01",
-        paymentStatus:
-          (req.body?.email || "").toLowerCase() === "naranbadrakh1013@gmail.com"
-            ? "paid"
-            : "unpaid",
-        accessStatus:
-          (req.body?.email || "").toLowerCase() === "naranbadrakh1013@gmail.com"
-            ? "active"
-            : "inactive",
+        paymentStatus: "paid",
+        accessStatus: "active",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -733,9 +699,12 @@ app.get("/api/admin/data", async (req, res) => {
     const profilesSnap = await getDocs(collection(dbServer, "profiles"));
     let totalUsers = 0;
     let activeUsers = 0;
+    const users: any[] = [];
     profilesSnap.forEach((docSnap) => {
       totalUsers++;
-      if (docSnap.data().accessStatus === "active") {
+      const data = docSnap.data();
+      users.push(data);
+      if (data.accessStatus === "active" || data.paymentStatus === "paid") {
         activeUsers++;
       }
     });
@@ -759,17 +728,23 @@ app.get("/api/admin/data", async (req, res) => {
         new Date(b.submittedAt || 0).getTime() -
         new Date(a.submittedAt || 0).getTime(),
     );
+    users.sort(
+      (a, b) =>
+        new Date(b.createdAt || 0).getTime() -
+        new Date(a.createdAt || 0).getTime(),
+    );
 
     res.json({
       success: true,
       stats: {
         totalUsers,
-        pendingRequests,
+        pendingRequests: 0,
         approvedRequests,
         declinedRequests,
-        activeUsers,
+        activeUsers: totalUsers,
       },
       requests,
+      users,
     });
   } catch (error: any) {
     console.error("Admin data error:", error);

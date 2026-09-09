@@ -38,10 +38,14 @@ export default function BnxAdminPanel({
     activeUsers: 0,
   });
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [activePanelTab, setActivePanelTab] = useState<"users" | "requests">(
+    "users",
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "pending" | "approved" | "declined" | "all"
-  >("pending");
+  >("all");
 
   // Modal for declining payment with optional reason
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
@@ -66,6 +70,7 @@ export default function BnxAdminPanel({
 
       setStats(data.stats);
       setRequests(data.requests || []);
+      setUsers(data.users || []);
     } catch (err: any) {
       console.error("Fetch admin data error:", err);
       setError(err.message || "Алдаа гарлаа.");
@@ -160,6 +165,17 @@ export default function BnxAdminPanel({
   };
 
   // Filter requests
+  const filteredUsers = users.filter((u) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      (u.name && u.name.toLowerCase().includes(q)) ||
+      (u.email && u.email.toLowerCase().includes(q)) ||
+      (u.transactionReference &&
+        u.transactionReference.toLowerCase().includes(q))
+    );
+  });
+
   const filteredRequests = requests.filter((reqItem) => {
     const matchesStatus =
       statusFilter === "all" || reqItem.status === statusFilter;
@@ -198,11 +214,11 @@ export default function BnxAdminPanel({
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-            Төлбөр шалгах ба Хэрэглэгчийн удирдлага
+            Хэрэглэгчийн удирдлагын хяналтын самбар
           </h1>
           <p className="text-xs text-neutral-400 mt-1">
-            Оюутнуудын 100,000₮ шилжүүлгийг шалгаж, BNX эрхийг баталгаажуулах
-            хэсэг
+            Төлбөрийн систем хаагдсан тул бүх оюутан платформд нээлттэй хандах
+            эрхтэй байна.
           </p>
         </div>
 
@@ -214,6 +230,18 @@ export default function BnxAdminPanel({
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           <span>Шинэчлэх</span>
         </button>
+      </div>
+
+      {/* Free open access notice */}
+      <div className="p-4 bg-amber-400/10 border border-amber-400/20 rounded-2xl flex items-center justify-between gap-3 text-xs text-amber-300">
+        <div className="flex items-center gap-2.5">
+          <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0" />
+          <span>
+            <strong>Төлбөрийн систем унтраагдсан:</strong> Бүх сурагчид их
+            сургуулиудын сан, тэтгэлэг, AI эссэ болон аппликейшн хөтөч рүү ямар
+            ч төлбөргүй шууд хандах боломжтой.
+          </span>
+        </div>
       </div>
 
       {actionSuccessMsg && (
@@ -231,12 +259,12 @@ export default function BnxAdminPanel({
       )}
 
       {/* Stats Counter Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* Total Users */}
         <div className="bg-neutral-900 border border-neutral-800 p-4 rounded-2xl space-y-1">
           <div className="flex items-center justify-between text-neutral-400">
             <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
-              Нийт хэрэглэгч
+              Нийт оюутнууд
             </span>
             <Users className="w-4 h-4 text-sky-400" />
           </div>
@@ -245,228 +273,275 @@ export default function BnxAdminPanel({
           </div>
         </div>
 
+        {/* Active Subscriptions */}
+        <div className="bg-neutral-900 border border-neutral-800 p-4 rounded-2xl space-y-1">
+          <div className="flex items-center justify-between text-neutral-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
+              Бүрэн эрхтэй хэрэглэгч
+            </span>
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="text-2xl font-black text-emerald-400 font-mono">
+            {stats.activeUsers}
+          </div>
+        </div>
+
         {/* Pending Requests */}
-        <div className="border border-amber-500/30 p-4 rounded-2xl space-y-1 bg-amber-500/5">
-          <div className="flex items-center justify-between text-amber-400">
+        <div className="bg-neutral-900 border border-neutral-800 p-4 rounded-2xl space-y-1">
+          <div className="flex items-center justify-between text-neutral-400">
             <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
               Хүлээгдэж буй
             </span>
-            <Clock className="w-4 h-4 text-amber-400 animate-pulse" />
+            <Clock className="w-4 h-4 text-neutral-500" />
           </div>
-          <div className="text-2xl font-black text-amber-400 font-mono">
+          <div className="text-2xl font-black text-white font-mono">
             {stats.pendingRequests}
           </div>
         </div>
 
         {/* Approved Requests */}
-        <div className="border border-emerald-500/30 p-4 rounded-2xl space-y-1 bg-emerald-500/5">
-          <div className="flex items-center justify-between text-emerald-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
-              Баталгаажсан
-            </span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="text-2xl font-black text-emerald-400 font-mono">
-            {stats.approvedRequests}
-          </div>
-        </div>
-
-        {/* Declined Requests */}
-        <div className="border border-rose-500/30 p-4 rounded-2xl space-y-1 bg-rose-500/5">
-          <div className="flex items-center justify-between text-rose-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
-              Татгалзсан
-            </span>
-            <XCircle className="w-4 h-4 text-rose-400" />
-          </div>
-          <div className="text-2xl font-black text-rose-400 font-mono">
-            {stats.declinedRequests}
-          </div>
-        </div>
-
-        {/* Active Subscriptions */}
-        <div className="bg-neutral-900 border border-neutral-800 p-4 rounded-2xl space-y-1 col-span-2 lg:col-span-1">
+        <div className="bg-neutral-900 border border-neutral-800 p-4 rounded-2xl space-y-1">
           <div className="flex items-center justify-between text-neutral-400">
             <span className="text-[10px] font-bold uppercase tracking-wider font-mono">
-              Идэвхтэй гишүүд
+              Шилжүүлгийн түүх
             </span>
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-neutral-400" />
           </div>
           <div className="text-2xl font-black text-white font-mono">
-            {stats.activeUsers}
+            {requests.length}
           </div>
         </div>
       </div>
 
-      {/* Filter and Search Toolbar */}
+      {/* Main Tab Switcher & Search Bar */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Status Filter Tabs */}
+        {/* Navigation Tabs */}
         <div className="flex items-center bg-neutral-950 p-1 rounded-xl border border-neutral-800 overflow-x-auto text-xs">
           <button
-            onClick={() => setStatusFilter("pending")}
-            className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
-              statusFilter === "pending"
-                ? "bg-amber-400 text-black shadow-md"
+            onClick={() => setActivePanelTab("users")}
+            className={`px-4 py-2 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
+              activePanelTab === "users"
+                ? "bg-amber-400 text-black shadow-md font-extrabold"
                 : "text-neutral-400 hover:text-white"
             }`}
           >
-            Хүлээгдэж буй ({stats.pendingRequests})
+            <Users className="w-3.5 h-3.5" />
+            <span>Бүртгэлтэй Оюутнууд ({users.length})</span>
           </button>
+
           <button
-            onClick={() => setStatusFilter("approved")}
-            className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
-              statusFilter === "approved"
-                ? "bg-emerald-500 text-white shadow-md"
+            onClick={() => setActivePanelTab("requests")}
+            className={`px-4 py-2 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
+              activePanelTab === "requests"
+                ? "bg-amber-400 text-black shadow-md font-extrabold"
                 : "text-neutral-400 hover:text-white"
             }`}
           >
-            Баталгаажсан ({stats.approvedRequests})
-          </button>
-          <button
-            onClick={() => setStatusFilter("declined")}
-            className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
-              statusFilter === "declined"
-                ? "bg-rose-500 text-white shadow-md"
-                : "text-neutral-400 hover:text-white"
-            }`}
-          >
-            Татгалзсан ({stats.declinedRequests})
-          </button>
-          <button
-            onClick={() => setStatusFilter("all")}
-            className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
-              statusFilter === "all"
-                ? "bg-neutral-800 text-white shadow-md"
-                : "text-neutral-400 hover:text-white"
-            }`}
-          >
-            Бүгд ({requests.length})
+            <CreditCard className="w-3.5 h-3.5" />
+            <span>Төлбөрийн Хүсэлтийн Архив ({requests.length})</span>
           </button>
         </div>
 
         {/* Search Field */}
-        <div className="relative min-w-60 md:w-72">
+        <div className="relative min-w-[240px] md:w-72">
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-neutral-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Сурагчийн нэр, и-мэйл, код..."
+            placeholder="Нэр, и-мэйл, код хайх..."
             className="w-full bg-neutral-950 border border-neutral-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 placeholder:text-neutral-500"
           />
         </div>
       </div>
 
-      {/* Payment Requests Table / List */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-xl">
-        {loading ? (
-          <div className="p-12 text-center text-neutral-400 text-xs font-mono">
-            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400" />
-            Мэдээлэл ачааллаж байна...
-          </div>
-        ) : filteredRequests.length === 0 ? (
-          <div className="p-12 text-center text-neutral-500 text-xs">
-            <Clock className="w-8 h-8 mx-auto mb-2 text-neutral-600" />
-            Илэрц олдсонгүй.
-          </div>
-        ) : (
-          <div className="divide-y divide-neutral-800">
-            {filteredRequests.map((reqItem) => (
-              <div
-                key={reqItem.id}
-                className="p-4 md:p-5 hover:bg-neutral-850/50 transition flex flex-col md:flex-row md:items-center justify-between gap-4"
-              >
-                {/* Student Info */}
-                <div className="space-y-1.5 max-w-md">
+      {/* VIEW 1: REGISTERED USERS LIST */}
+      {activePanelTab === "users" && (
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-xl">
+          {loading ? (
+            <div className="p-12 text-center text-neutral-400 text-xs font-mono">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400" />
+              Хэрэглэгчдийн мэдээлэл ачааллаж байна...
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="p-12 text-center text-neutral-500 text-xs">
+              <Users className="w-8 h-8 mx-auto mb-2 text-neutral-600" />
+              Одоогоор бүртгэлтэй оюутан олдсонгүй.
+            </div>
+          ) : (
+            <div className="divide-y divide-neutral-800">
+              {filteredUsers.map((u, idx) => (
+                <div
+                  key={u.uid || idx}
+                  className="p-4 md:p-5 hover:bg-neutral-850/50 transition flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-white text-sm flex items-center gap-1.5">
+                        <User className="w-4 h-4 text-neutral-400" />
+                        {u.name ||
+                          `${u.lastName || ""} ${u.firstName || ""}`.trim() ||
+                          "Оюутан"}
+                      </span>
+                      <span className="font-mono text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                        {u.transactionReference || "student_01"}
+                      </span>
+                      {u.role === "admin" && (
+                        <span className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase font-mono">
+                          Админ
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-400 font-sans">
+                      <span className="flex items-center gap-1">
+                        <Mail className="w-3.5 h-3.5 text-neutral-500" />
+                        {u.email}
+                      </span>
+                      <span className="flex items-center gap-1 text-[11px] font-mono">
+                        <Calendar className="w-3.5 h-3.5 text-neutral-500" />
+                        Бүртгүүлсэн: {formatDate(u.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-white text-sm flex items-center gap-1.5">
-                      <User className="w-4 h-4 text-neutral-400" />
-                      {reqItem.studentName}
-                    </span>
-
-                    <span className="font-mono text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
-                      {reqItem.transactionReference}
+                    <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono">
+                      <CheckCircle2 className="w-3 h-3" /> Нээлттэй эрхтэй
                     </span>
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-400 font-sans">
-                    <span className="flex items-center gap-1">
-                      <Mail className="w-3.5 h-3.5 text-neutral-500" />
-                      {reqItem.email}
-                    </span>
-
-                    <span className="flex items-center gap-1 text-[11px] font-mono">
-                      <Calendar className="w-3.5 h-3.5 text-neutral-500" />
-                      Огноо: {formatDate(reqItem.submittedAt)}
-                    </span>
-                  </div>
-
-                  {reqItem.declineReason && reqItem.status === "declined" && (
-                    <div className="text-[11px] text-rose-400/90 italic bg-rose-500/10 p-2 rounded-lg border border-rose-500/20 mt-1">
-                      Татгалзсан шалтгаан: {reqItem.declineReason}
-                    </div>
-                  )}
                 </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-                {/* Amount & Status Badge & Actions */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
-                  {/* Amount */}
-                  <div className="text-right sm:pr-2">
-                    <span className="text-[10px] text-neutral-500 uppercase tracking-wider block font-mono">
-                      Төлбөр
-                    </span>
-                    <span className="text-base font-black text-amber-400 font-mono">
-                      {(reqItem.amount || 100000).toLocaleString()}₮
-                    </span>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div>
-                    {reqItem.status === "pending" ? (
-                      <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono">
-                        <Clock className="w-3 h-3 animate-pulse" /> ХҮЛЭЭГДЭЖ
-                        БАЙНА
-                      </span>
-                    ) : reqItem.status === "approved" ? (
-                      <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono">
-                        <CheckCircle2 className="w-3 h-3" /> ЗӨВШӨӨРСӨН
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono">
-                        <XCircle className="w-3 h-3" /> ТАТГАЛЗСАН
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Actions for pending status */}
-                  {reqItem.status === "pending" && (
-                    <div className="flex items-center gap-2 pt-2 sm:pt-0">
-                      <button
-                        onClick={() => handleApprove(reqItem)}
-                        disabled={processingId === reqItem.id}
-                        className="bg-emerald-500 hover:bg-emerald-400 text-black px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md disabled:opacity-50 cursor-pointer flex items-center gap-1"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        ЗӨВШӨӨРӨХ
-                      </button>
-
-                      <button
-                        onClick={() => handleOpenDeclineModal(reqItem)}
-                        disabled={processingId === reqItem.id}
-                        className="bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/40 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-1"
-                      >
-                        <XCircle className="w-3.5 h-3.5" />
-                        ТАТГАЛЗАХ
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+      {/* VIEW 2: PAYMENT REQUESTS ARCHIVE */}
+      {activePanelTab === "requests" && (
+        <div className="space-y-4">
+          {/* Sub-filter for requests */}
+          <div className="flex items-center bg-neutral-950 p-1 rounded-xl border border-neutral-800 overflow-x-auto text-xs w-fit">
+            <button
+              onClick={() => setStatusFilter("all")}
+              className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
+                statusFilter === "all"
+                  ? "bg-neutral-800 text-white shadow-md"
+                  : "text-neutral-400 hover:text-white"
+              }`}
+            >
+              Бүгд ({requests.length})
+            </button>
+            <button
+              onClick={() => setStatusFilter("pending")}
+              className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
+                statusFilter === "pending"
+                  ? "bg-amber-400 text-black shadow-md"
+                  : "text-neutral-400 hover:text-white"
+              }`}
+            >
+              Хүлээгдэж буй ({stats.pendingRequests})
+            </button>
+            <button
+              onClick={() => setStatusFilter("approved")}
+              className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
+                statusFilter === "approved"
+                  ? "bg-emerald-500 text-white shadow-md"
+                  : "text-neutral-400 hover:text-white"
+              }`}
+            >
+              Баталгаажсан ({stats.approvedRequests})
+            </button>
+            <button
+              onClick={() => setStatusFilter("declined")}
+              className={`px-3 py-1.5 rounded-lg font-bold tracking-wider uppercase transition cursor-pointer shrink-0 ${
+                statusFilter === "declined"
+                  ? "bg-rose-500 text-white shadow-md"
+                  : "text-neutral-400 hover:text-white"
+              }`}
+            >
+              Татгалзсан ({stats.declinedRequests})
+            </button>
           </div>
-        )}
-      </div>
 
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-xl">
+            {loading ? (
+              <div className="p-12 text-center text-neutral-400 text-xs font-mono">
+                <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400" />
+                Мэдээлэл ачааллаж байна...
+              </div>
+            ) : filteredRequests.length === 0 ? (
+              <div className="p-12 text-center text-neutral-500 text-xs">
+                <Clock className="w-8 h-8 mx-auto mb-2 text-neutral-600" />
+                Төлбөрийн хүсэлт олдсонгүй.
+              </div>
+            ) : (
+              <div className="divide-y divide-neutral-800">
+                {filteredRequests.map((reqItem) => (
+                  <div
+                    key={reqItem.id}
+                    className="p-4 md:p-5 hover:bg-neutral-850/50 transition flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-1.5 max-w-md">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white text-sm flex items-center gap-1.5">
+                          <User className="w-4 h-4 text-neutral-400" />
+                          {reqItem.studentName}
+                        </span>
+                        <span className="font-mono text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                          {reqItem.transactionReference}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-400 font-sans">
+                        <span className="flex items-center gap-1">
+                          <Mail className="w-3.5 h-3.5 text-neutral-500" />
+                          {reqItem.email}
+                        </span>
+                        <span className="flex items-center gap-1 text-[11px] font-mono">
+                          <Calendar className="w-3.5 h-3.5 text-neutral-500" />
+                          Огноо: {formatDate(reqItem.submittedAt)}
+                        </span>
+                      </div>
+                      {reqItem.declineReason &&
+                        reqItem.status === "declined" && (
+                          <div className="text-[11px] text-rose-400/90 italic bg-rose-500/10 p-2 rounded-lg border border-rose-500/20 mt-1">
+                            Татгалзсан шалтгаан: {reqItem.declineReason}
+                          </div>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+                      <div className="text-right sm:pr-2">
+                        <span className="text-[10px] text-neutral-500 uppercase tracking-wider block font-mono">
+                          Төлбөр
+                        </span>
+                        <span className="text-base font-black text-amber-400 font-mono">
+                          {(reqItem.amount || 100000).toLocaleString()}₮
+                        </span>
+                      </div>
+                      <div>
+                        {reqItem.status === "pending" ? (
+                          <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono">
+                            <Clock className="w-3 h-3 animate-pulse" />{" "}
+                            ХҮЛЭЭГДЭЖ БАЙНА
+                          </span>
+                        ) : reqItem.status === "approved" ? (
+                          <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono">
+                            <CheckCircle2 className="w-3 h-3" /> ЗӨВШӨӨРСӨН
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono">
+                            <XCircle className="w-3 h-3" /> ТАТГАЛЗСАН
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* Decline Reason Modal */}
       {declineModalOpen && selectedReqForDecline && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">

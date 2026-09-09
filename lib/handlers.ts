@@ -41,7 +41,7 @@ Output the result strictly as a JSON object of this structure:
       "gpaFactor": "Feedback about GPA against entry requirements",
       "testFactor": "Feedback about IELTS/TOEFL/SAT",
       "activitiesFactor": "Feedback about Olympiads/Leadership/Extracurriculars",
-      "actionableAdvice": "Concrete, friendly application tips tailored for Mongolian students navigating visa and scholarship options for this school"
+      "actionableAdvice": "Concrete, friendly application tips tailored for Mongolian students navigating visa and scholarship options for this schoosl"
     }
   ]
 }
