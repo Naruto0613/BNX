@@ -2,36 +2,9 @@ export interface AwardItem {
   id: string;
   awardName: string;
   competitionName: string;
-  category:
-    | "Academic"
-    | "Science"
-    | "Mathematics"
-    | "Programming"
-    | "Robotics"
-    | "Business"
-    | "Sports"
-    | "Arts"
-    | "Language"
-    | "Other";
-  level:
-    | "School"
-    | "District"
-    | "City"
-    | "Province"
-    | "National"
-    | "Regional"
-    | "International"
-    | "Global";
-  awardType:
-    | "Champion"
-    | "Gold"
-    | "Silver"
-    | "Bronze"
-    | "Finalist"
-    | "Participant"
-    | "Honorable Mention"
-    | "Scholarship"
-    | "Research Award";
+  category: 'Academic' | 'Science' | 'Mathematics' | 'Programming' | 'Robotics' | 'Business' | 'Sports' | 'Arts' | 'Language' | 'Other';
+  level: 'School' | 'District' | 'City' | 'Province' | 'National' | 'Regional' | 'International' | 'Global';
+  awardType: 'Champion' | 'Gold' | 'Silver' | 'Bronze' | 'Finalist' | 'Participant' | 'Honorable Mention' | 'Scholarship' | 'Research Award';
   year: string;
   organizer?: string;
   certificateUrl?: string;
@@ -40,37 +13,8 @@ export interface AwardItem {
 
 export interface ActivityItem {
   id: string;
-  activityType:
-    | "Leadership"
-    | "Volunteer"
-    | "Research"
-    | "Internship"
-    | "Club"
-    | "Sports"
-    | "Music"
-    | "Art"
-    | "Business"
-    | "Startup"
-    | "Hackathon"
-    | "Debate"
-    | "Competition"
-    | "Community Service"
-    | "Teaching"
-    | "Work Experience"
-    | "Other";
-  role:
-    | "Founder"
-    | "Co-Founder"
-    | "President"
-    | "Vice President"
-    | "Captain"
-    | "Leader"
-    | "Coordinator"
-    | "Member"
-    | "Volunteer"
-    | "Research Assistant"
-    | "Intern"
-    | "Employee";
+  activityType: 'Leadership' | 'Volunteer' | 'Research' | 'Internship' | 'Club' | 'Sports' | 'Music' | 'Art' | 'Business' | 'Startup' | 'Hackathon' | 'Debate' | 'Competition' | 'Community Service' | 'Teaching' | 'Work Experience' | 'Other';
+  role: 'Founder' | 'Co-Founder' | 'President' | 'Vice President' | 'Captain' | 'Leader' | 'Coordinator' | 'Member' | 'Volunteer' | 'Research Assistant' | 'Intern' | 'Employee';
   organization: string;
   startDate?: string;
   endDate?: string;
@@ -84,7 +28,7 @@ export interface ActivityItem {
 export interface ResearchItem {
   id: string;
   title: string;
-  published: "Yes" | "No";
+  published: 'Yes' | 'No';
   conferenceOrJournal?: string;
   researchArea?: string;
   supervisor?: string;
@@ -94,27 +38,17 @@ export interface ResearchItem {
 export interface LanguageItem {
   id: string;
   language: string;
-  reading: "Basic" | "Intermediate" | "Fluent" | "Native";
-  writing: "Basic" | "Intermediate" | "Fluent" | "Native";
-  listening: "Basic" | "Intermediate" | "Fluent" | "Native";
-  speaking: "Basic" | "Intermediate" | "Fluent" | "Native";
-  overallLevel: "Basic" | "Intermediate" | "Fluent" | "Native";
+  reading: 'Basic' | 'Intermediate' | 'Fluent' | 'Native';
+  writing: 'Basic' | 'Intermediate' | 'Fluent' | 'Native';
+  listening: 'Basic' | 'Intermediate' | 'Fluent' | 'Native';
+  speaking: 'Basic' | 'Intermediate' | 'Fluent' | 'Native';
+  overallLevel: 'Basic' | 'Intermediate' | 'Fluent' | 'Native';
 }
 
 export interface DocumentItem {
   id: string;
-  type:
-    | "Transcript"
-    | "Passport"
-    | "CV"
-    | "Recommendation Letter"
-    | "Personal Statement"
-    | "IELTS"
-    | "SAT"
-    | "TOEFL"
-    | "Awards"
-    | "Certificates";
-  status: "Uploaded" | "Missing";
+  type: 'Transcript' | 'Passport' | 'CV' | 'Recommendation Letter' | 'Personal Statement' | 'IELTS' | 'SAT' | 'TOEFL' | 'Awards' | 'Certificates';
+  status: 'Uploaded' | 'Missing';
   fileName?: string;
   fileUrl?: string;
   updatedAt?: string;
@@ -123,20 +57,11 @@ export interface DocumentItem {
 export interface UniversityPreferences {
   preferredCountries: string[];
   budgetAnnualUsd?: number;
-  needScholarship: "Yes" | "No";
-  preferredClimate?: "Warm" | "Cold" | "Temperate" | "Any";
-  preferredCampusSize?: "Small" | "Medium" | "Large" | "Any";
-  preferredCitySize?:
-    | "Major Metropolis"
-    | "Medium City"
-    | "College Town"
-    | "Any";
-  preferredUniversityType?:
-    | "Public"
-    | "Private"
-    | "Research"
-    | "Liberal Arts"
-    | "Any";
+  needScholarship: 'Yes' | 'No';
+  preferredClimate?: 'Warm' | 'Cold' | 'Temperate' | 'Any';
+  preferredCampusSize?: 'Small' | 'Medium' | 'Large' | 'Any';
+  preferredCitySize?: 'Major Metropolis' | 'Medium City' | 'College Town' | 'Any';
+  preferredUniversityType?: 'Public' | 'Private' | 'Research' | 'Liberal Arts' | 'Any';
   careerGoal?: string;
 }
 
@@ -183,10 +108,10 @@ export interface UserProfile {
   careerInterests?: string; // e.g. "Engineering", "IT", "Business", "Medicine", "Arts", "Science", "Other"
   firstName?: string;
   lastName?: string;
-  role?: "student" | "admin";
+  role?: 'student' | 'admin';
   transactionReference?: string;
-  paymentStatus?: "unpaid" | "pending" | "paid" | "declined";
-  accessStatus?: "active" | "inactive";
+  paymentStatus?: 'unpaid' | 'pending' | 'paid' | 'declined';
+  accessStatus?: 'active' | 'inactive';
   subscriptionStart?: string;
   subscriptionEnd?: string;
   documentsList?: DocumentItem[];
@@ -202,7 +127,7 @@ export interface PaymentRequest {
   email: string;
   transactionReference: string;
   amount: number;
-  status: "pending" | "approved" | "declined";
+  status: 'pending' | 'approved' | 'declined';
   submittedAt: string;
   createdAt?: string;
   reviewedAt?: string;
@@ -223,11 +148,10 @@ export interface University {
   name: string;
   country: string;
   imageUrl?: string;
-  imageSourceUrl?: string;
   ranking?: number;
   acceptanceRate?: string;
   website?: string;
-
+  
   // Costs
   tuitionFee?: number;
   dormitoryFee?: number;
@@ -277,14 +201,7 @@ export interface ApplicationTrack {
   userId: string;
   universityId: string;
   universityName: string;
-  status:
-    | "In Progress"
-    | "Document Stage"
-    | "Submitted"
-    | "Interview Scheduled"
-    | "Admission Offered"
-    | "Rejected"
-    | "Scholarship Awarded";
+  status: 'In Progress' | 'Document Stage' | 'Submitted' | 'Interview Scheduled' | 'Admission Offered' | 'Rejected' | 'Scholarship Awarded';
   submittedDocuments: string[]; // List of documents uploaded/checked
   appliedScholarships: string;
   notes?: string;
@@ -326,7 +243,7 @@ export interface AIRecommendationMatch {
   country: string;
   ranking?: number;
   matchPercentage: number;
-  difficulty: "Reach" | "Target" | "Safety";
+  difficulty: 'Reach' | 'Target' | 'Safety';
   gpaFactor?: string;
   testFactor?: string;
   activitiesFactor?: string;

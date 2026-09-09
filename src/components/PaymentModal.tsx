@@ -1,15 +1,5 @@
 import React, { useState } from "react";
-import {
-  Copy,
-  Check,
-  ShieldCheck,
-  AlertCircle,
-  CreditCard,
-  Building2,
-  User,
-  Hash,
-  X,
-} from "lucide-react";
+import { Copy, Check, ShieldCheck, AlertCircle, CreditCard, Building2, User, Hash, X } from "lucide-react";
 import BnxLogo from "./BnxLogo";
 
 interface PaymentModalProps {
@@ -19,7 +9,7 @@ interface PaymentModalProps {
   email: string;
   studentName: string;
   transactionReference: string;
-  paymentStatus?: "unpaid" | "pending" | "paid" | "declined";
+  paymentStatus?: 'unpaid' | 'pending' | 'paid' | 'declined';
   onPaymentSubmitted: () => void;
 }
 
@@ -31,7 +21,7 @@ export default function PaymentModal({
   studentName,
   transactionReference,
   paymentStatus,
-  onPaymentSubmitted,
+  onPaymentSubmitted
 }: PaymentModalProps) {
   const [copiedBank, setCopiedBank] = useState(false);
   const [copiedRef, setCopiedRef] = useState(false);
@@ -67,19 +57,17 @@ export default function PaymentModal({
       const res = await fetch("/api/payment-requests/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uid,
-          email,
-          studentName,
-          transactionReference,
-        }),
+        body: JSON.stringify({ 
+          uid, 
+          email, 
+          studentName, 
+          transactionReference 
+        })
       });
       const data = await res.json();
 
       if (data.error && !data.success) {
-        throw new Error(
-          data.error || "Төлбөрийн хүсэлт илгээхэд алдаа гарлаа.",
-        );
+        throw new Error(data.error || "Төлбөрийн хүсэлт илгээхэд алдаа гарлаа.");
       }
 
       setSubmitMessage(data.message || "Таны төлбөрийн хүсэлт илгээгдлээ.");
@@ -94,6 +82,7 @@ export default function PaymentModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
       <div className="bg-neutral-900 border border-neutral-800 rounded-3xl max-w-lg w-full p-6 md:p-8 text-white shadow-2xl relative overflow-hidden">
+        
         {/* Subtle accent glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 rounded-b-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
 
@@ -122,13 +111,11 @@ export default function PaymentModal({
         </div>
 
         {/* Status indicator if pending */}
-        {paymentStatus === "pending" && (
+        {paymentStatus === 'pending' && (
           <div className="mb-5 p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3 text-amber-300 text-xs">
             <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold block">
-                Таны төлбөр шалгагдаж байна
-              </span>
+              <span className="font-bold block">Таны төлбөр шалгагдаж байна</span>
               <p className="text-[11px] text-amber-200/80 mt-0.5">
                 Админ таны шилжүүлгийг шалгасны дараа бүртгэл баталгаажна.
               </p>
@@ -141,9 +128,7 @@ export default function PaymentModal({
             <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold block">Амжилттай илгээгдлээ</span>
-              <p className="text-[11px] text-emerald-200/80 mt-0.5">
-                {submitMessage}
-              </p>
+              <p className="text-[11px] text-emerald-200/80 mt-0.5">{submitMessage}</p>
             </div>
           </div>
         )}
@@ -156,6 +141,7 @@ export default function PaymentModal({
 
         {/* Bank Information Details Card */}
         <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-5 space-y-4 mb-6">
+          
           {/* Bank Name */}
           <div className="flex items-center justify-between text-xs pb-3 border-b border-neutral-850">
             <span className="text-neutral-400 flex items-center gap-2">
@@ -179,11 +165,7 @@ export default function PaymentModal({
                 onClick={handleCopyAccount}
                 className="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 px-2 py-1 rounded-lg text-[10px] font-bold uppercase transition flex items-center gap-1 active:scale-95 cursor-pointer"
               >
-                {copiedBank ? (
-                  <Check className="w-3 h-3 text-emerald-400" />
-                ) : (
-                  <Copy className="w-3 h-3" />
-                )}
+                {copiedBank ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                 {copiedBank ? "Хууллаа ✓" : "ХУУЛАХ"}
               </button>
             </div>
@@ -201,9 +183,7 @@ export default function PaymentModal({
           {/* Amount */}
           <div className="flex items-center justify-between text-xs pb-3 border-b border-neutral-850">
             <span className="text-neutral-400">Төлбөрийн дүн</span>
-            <span className="font-black text-amber-400 text-base font-mono">
-              {AMOUNT}
-            </span>
+            <span className="font-black text-amber-400 text-base font-mono">{AMOUNT}</span>
           </div>
 
           {/* Unique Transaction Reference */}
@@ -220,26 +200,19 @@ export default function PaymentModal({
               onClick={handleCopyRef}
               className="bg-amber-400 hover:bg-amber-300 text-black px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase transition flex items-center gap-1 active:scale-95 cursor-pointer shadow-md"
             >
-              {copiedRef ? (
-                <Check className="w-3.5 h-3.5 text-black" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
-              )}
+              {copiedRef ? <Check className="w-3.5 h-3.5 text-black" /> : <Copy className="w-3.5 h-3.5" />}
               {copiedRef ? "Хууллаа ✓" : "ХУУЛАХ"}
             </button>
           </div>
+
         </div>
 
         {/* Warning / Instruction */}
         <div className="bg-neutral-800/50 border border-neutral-800 rounded-xl p-3 mb-6 text-[11px] text-neutral-300 flex items-start gap-2.5">
           <Hash className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
           <p className="leading-snug">
-            <strong className="text-amber-300 font-bold">Анхаар:</strong>{" "}
-            Гүйлгээний утга хэсэгт өөрийн тусгай код{" "}
-            <span className="font-mono font-bold text-amber-300">
-              ({transactionReference || "student_00"})
-            </span>
-            -г заавал бичнэ үү.
+            <strong className="text-amber-300 font-bold">Анхаар:</strong> Гүйлгээний утга хэсэгт өөрийн тусгай код{" "}
+            <span className="font-mono font-bold text-amber-300">({transactionReference || "student_00"})</span>-г заавал бичнэ үү.
           </p>
         </div>
 
@@ -258,6 +231,7 @@ export default function PaymentModal({
             </>
           )}
         </button>
+
       </div>
     </div>
   );
